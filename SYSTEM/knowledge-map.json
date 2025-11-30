@@ -1,0 +1,137 @@
+{
+  "domains": [
+    {
+      "id": "photorealism",
+      "doc": "01_photorealistic_prompting_v03.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 820,
+      "target_lines": 400,
+      "actual_lines": 710,
+      "transformation": "Compress camera/lighting tables, keep skin texture section, add model tips",
+      "priority": "MEDIUM",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "ostris-training",
+      "doc": "02_ostris_training_core.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 695,
+      "target_lines": 500,
+      "actual_lines": 694,
+      "transformation": "Split from 02_qwen_training_guide.md, migrate 05 timeline",
+      "priority": "CRITICAL",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "qwen-specifics",
+      "doc": "02a_qwen_specifics.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 695,
+      "target_lines": 350,
+      "actual_lines": 409,
+      "transformation": "Extract from 02_qwen_training_guide.md",
+      "priority": "CRITICAL",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "flux-specifics",
+      "doc": "02b_flux_specifics.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 0,
+      "target_lines": 350,
+      "actual_lines": 483,
+      "transformation": "New file - Flux training parameters",
+      "priority": "CRITICAL",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "quick-reference",
+      "doc": "03_qwen_quick_reference.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 96,
+      "target_lines": 96,
+      "actual_lines": 97,
+      "transformation": "Keep unchanged",
+      "priority": "LOW",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "troubleshooting",
+      "doc": "04_troubleshooting_v03.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 454,
+      "target_lines": 300,
+      "actual_lines": 407,
+      "transformation": "Convert to decision tree format",
+      "priority": "MEDIUM",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "workflow-diagram",
+      "doc": "05_qwen_workflow_diagram.md",
+      "location": "deleted",
+      "status": "completed",
+      "source_lines": 235,
+      "target_lines": 0,
+      "actual_lines": 0,
+      "transformation": "DELETE - migrated timeline to 02_ostris_training_core.md",
+      "priority": "HIGH",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "higgsfield",
+      "doc": "06_higgsfield_integration_v03.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 592,
+      "target_lines": 400,
+      "actual_lines": 498,
+      "transformation": "Remove training overlap, cross-reference 02 files",
+      "priority": "HIGH",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "instagram",
+      "doc": "07_instagram_authentic_v03.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 919,
+      "target_lines": 450,
+      "actual_lines": 506,
+      "transformation": "Keep POV framework (200 lines), consolidate scenarios, table format",
+      "priority": "HIGH",
+      "critical_section": "Section 0: POV Decision Framework - PRESERVED",
+      "completion_date": "2025-11-28"
+    },
+    {
+      "id": "model-specific",
+      "doc": "08_model_specific_best_practices.md",
+      "location": "core",
+      "status": "completed",
+      "source_lines": 1044,
+      "target_lines": 254,
+      "actual_lines": 282,
+      "transformation": "Consolidated to table format (73% reduction from source)",
+      "priority": "LOW",
+      "completion_date": "2025-11-28"
+    }
+  ],
+  "totals": {
+    "source_lines": 4168,
+    "target_lines": 1500,
+    "actual_lines": 4086,
+    "reduction_from_source": -2,
+    "overage_from_target": 172,
+    "files_created": 9,
+    "files_deleted": 1,
+    "files_split": 1
+  },
+  "week1_status": "COMPLETED",
+  "week1_completion_date": "2025-11-28"
+}

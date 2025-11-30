@@ -1,0 +1,11 @@
+{
+  "model": "Xenova/all-MiniLM-L6-v2",
+  "chunkSize": 500,
+  "chunkOverlap": 100,
+  "topK": 3,
+  "knowledgeDir": "../knowledge/core",
+  "agentFile": "../agent/agent.md",
+  "cacheFile": "./embeddings/core/embeddings-cache.json",
+  "preserveTables": true,
+  "preserveCodeBlocks": true
+}

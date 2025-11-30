@@ -1,0 +1,533 @@
+{
+  "version": "0.3",
+  "test_date": "2025-11-30T10:57:38.516Z",
+  "rag_system": {
+    "total_files": 10,
+    "total_chunks": 542,
+    "embeddings_size_kb": "5937.02",
+    "model": "Xenova/all-MiniLM-L6-v2"
+  },
+  "performance": {
+    "avg_query_time_ms": 7,
+    "avg_relevance_score": 0.616,
+    "avg_primary_file_accuracy_percent": 65.8,
+    "total_queries_tested": 20,
+    "target_query_time_ms": 400,
+    "target_relevance": 0.88,
+    "target_primary_accuracy": 80
+  },
+  "pattern_distribution": {
+    "Pattern 2 (POV)": 7,
+    "Pattern 4 (Workflow)": 7,
+    "Pattern 3 (Reference)": 2,
+    "Pattern 1 (Model)": 3,
+    "General": 1
+  },
+  "test_results": [
+    {
+      "id": 1,
+      "query": "How do I make skin look realistic for Instagram?",
+      "pattern": "Pattern 2 (POV)",
+      "queryTime": 23,
+      "topScore": 0.6538635227295942,
+      "primaryFileAccuracy": 0,
+      "topResults": [
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "9. Workflow Integration",
+          "score": 0.6538635227295942
+        },
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "2. Skin Texture & Realism (CRITICAL)",
+          "score": 0.5776420337911219
+        },
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "4.4 Negative Prompts",
+          "score": 0.5658662451172075
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "query": "What camera for iPhone-style posts?",
+      "pattern": "Pattern 2 (POV)",
+      "queryTime": 12,
+      "topScore": 0.5386657965624432,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "Morning in Bed (Waking Up)",
+          "score": 0.5386657965624432
+        },
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "1.2 Camera Quick Reference",
+          "score": 0.5249370127599604
+        },
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "Quick Decision Questions",
+          "score": 0.509468507879185
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "query": "My LoRA has plastic skin, how to fix?",
+      "pattern": "Pattern 4 (Workflow)",
+      "queryTime": 14,
+      "topScore": 0.570164878153471,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "knowledge/core/02_ostris_training_core.md",
+          "section": "Issue 1: Plastic/AI-looking Skin",
+          "score": 0.570164878153471
+        },
+        {
+          "source": "knowledge/core/04_troubleshooting_v03.md",
+          "section": "Issue: Plastic Skin",
+          "score": 0.5557987623501375
+        },
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "7.1 Plastic Skin",
+          "score": 0.5117375769055065
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "query": "Create bedroom mirror selfie prompt",
+      "pattern": "Pattern 2 (POV)",
+      "queryTime": 13,
+      "topScore": 0.6251653697709034,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "agent/agent.md",
+          "section": "Perspective 1: Selfie POV",
+          "score": 0.6251653697709034
+        },
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "✅ Instagram-Authentic Prompt:",
+          "score": 0.6142779418492029
+        },
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "Post-Shower Bathroom Mirror",
+          "score": 0.5941132246104848
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "query": "Qwen training parameters for character LoRA",
+      "pattern": "Pattern 4 (Workflow)",
+      "queryTime": 15,
+      "topScore": 0.745736530472424,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "knowledge/core/02a_qwen_specifics.md",
+          "section": "Qwen-Image Training Specifics",
+          "score": 0.745736530472424
+        },
+        {
+          "source": "knowledge/core/03_qwen_quick_reference.md",
+          "section": "Qwen LoRA Training - Quick Reference Card",
+          "score": 0.6739755511477137
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Purpose",
+          "score": 0.635194641822768
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "query": "How to caption images for training?",
+      "pattern": "Pattern 3 (Reference)",
+      "queryTime": 11,
+      "topScore": 0.7037461855298041,
+      "primaryFileAccuracy": 0.5,
+      "topResults": [
+        {
+          "source": "agent/agent.md",
+          "section": "Phase 2: Dataset Preparation (Day 1-2, 1-2 hours)",
+          "score": 0.7037461855298041
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Phase 2: Dataset Preparation (Day 1-2, 1-2 hours)",
+          "score": 0.6462451985174308
+        },
+        {
+          "source": "knowledge/core/02_ostris_training_core.md",
+          "section": "2.3 Caption Generation Workflow",
+          "score": 0.6038220673433398
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "query": "Higgsfield vs direct generation?",
+      "pattern": "Pattern 1 (Model)",
+      "queryTime": 5,
+      "topScore": 0.5526821473915344,
+      "primaryFileAccuracy": 0.5,
+      "topResults": [
+        {
+          "source": "knowledge/core/06_higgsfield_integration_v03.md",
+          "section": "Generation Settings",
+          "score": 0.5526821473915344
+        },
+        {
+          "source": "knowledge/core/06_higgsfield_integration_v03.md",
+          "section": "Part 2: Higgsfield Soul ID Generation",
+          "score": 0.5382382415550596
+        },
+        {
+          "source": "knowledge/core/02_ostris_training_core.md",
+          "section": "Final Notes",
+          "score": 0.49939971177039494
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "query": "Third-person or selfie for coffee shop?",
+      "pattern": "Pattern 2 (POV)",
+      "queryTime": 4,
+      "topScore": 0.5590085006415234,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "**Perspective 1: Selfie POV**",
+          "score": 0.5590085006415234
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Perspective 1: Selfie POV",
+          "score": 0.5064086437768163
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Decision Tree",
+          "score": 0.4951383691503968
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "query": "Flux vs Qwen for Instagram?",
+      "pattern": "Pattern 1 (Model)",
+      "queryTime": 4,
+      "topScore": 0.647284072053739,
+      "primaryFileAccuracy": 0.3333333333333333,
+      "topResults": [
+        {
+          "source": "knowledge/core/02b_flux_specifics.md",
+          "section": "Summary: When to Use Flux vs Qwen",
+          "score": 0.647284072053739
+        },
+        {
+          "source": "knowledge/core/02b_flux_specifics.md",
+          "section": "Issue: Long Training Time",
+          "score": 0.4935857886874389
+        },
+        {
+          "source": "knowledge/core/02b_flux_specifics.md",
+          "section": "11. Flux vs Qwen: Key Differences",
+          "score": 0.4719155825097383
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "query": "How long does LoRA training take?",
+      "pattern": "Pattern 4 (Workflow)",
+      "queryTime": 4,
+      "topScore": 0.5546631379745238,
+      "primaryFileAccuracy": 0.5,
+      "topResults": [
+        {
+          "source": "knowledge/core/04_troubleshooting_v03.md",
+          "section": "LoRA Training Troubleshooting - Decision Tree",
+          "score": 0.5546631379745238
+        },
+        {
+          "source": "knowledge/core/06_higgsfield_integration_v03.md",
+          "section": "Complete Pipeline",
+          "score": 0.5467043196035377
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Purpose",
+          "score": 0.5416193440038802
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "query": "Best LoRA strength to use?",
+      "pattern": "General",
+      "queryTime": 4,
+      "topScore": 0.7364581058464645,
+      "primaryFileAccuracy": 0.5,
+      "topResults": [
+        {
+          "source": "knowledge/core/02_ostris_training_core.md",
+          "section": "5.4 LoRA Strength Testing",
+          "score": 0.7364581058464645
+        },
+        {
+          "source": "knowledge/core/06_higgsfield_integration_v03.md",
+          "section": "Quality Benchmarks",
+          "score": 0.5821836998895209
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Phase 4: Testing & Selection (Day 3, 1-2 hours)",
+          "score": 0.5727102469477312
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "query": "How to test checkpoints?",
+      "pattern": "Pattern 4 (Workflow)",
+      "queryTime": 4,
+      "topScore": 0.6988031360445963,
+      "primaryFileAccuracy": 0,
+      "topResults": [
+        {
+          "source": "knowledge/core/06_higgsfield_integration_v03.md",
+          "section": "Testing Strategy",
+          "score": 0.6988031360445963
+        },
+        {
+          "source": "knowledge/core/06_higgsfield_integration_v03.md",
+          "section": "Test Prompts (5 per checkpoint)",
+          "score": 0.6144563103051183
+        },
+        {
+          "source": "knowledge/core/06_higgsfield_integration_v03.md",
+          "section": "Phase 4: Testing (Day 3)",
+          "score": 0.6038279791934421
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "query": "Morning in bed photo - what POV?",
+      "pattern": "Pattern 2 (POV)",
+      "queryTime": 4,
+      "topScore": 0.6194431097104207,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "Morning in Bed (Waking Up)",
+          "score": 0.6194431097104207
+        },
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "**For Feed Posts:**",
+          "score": 0.5017868400858665
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Perspective 1: Selfie POV",
+          "score": 0.49805679491374605
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "query": "Reference image with LoRA - how to prompt?",
+      "pattern": "Pattern 3 (Reference)",
+      "queryTime": 5,
+      "topScore": 0.6665172527635691,
+      "primaryFileAccuracy": 0.5,
+      "topResults": [
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "6.5 Higgsfield Soul ID",
+          "score": 0.6665172527635691
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Purpose",
+          "score": 0.6307935773140085
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Agent Response Template",
+          "score": 0.5782244051616764
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "query": "Troubleshoot face inconsistency",
+      "pattern": "Pattern 4 (Workflow)",
+      "queryTime": 5,
+      "topScore": 0.7032591287866724,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "knowledge/core/04_troubleshooting_v03.md",
+          "section": "Issue: Face Inconsistency",
+          "score": 0.7032591287866724
+        },
+        {
+          "source": "knowledge/core/04_troubleshooting_v03.md",
+          "section": "Symptoms",
+          "score": 0.5429201434703318
+        },
+        {
+          "source": "knowledge/core/04_troubleshooting_v03.md",
+          "section": "Symptoms",
+          "score": 0.5268662100060405
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "query": "Dataset size for character LoRA?",
+      "pattern": "Pattern 4 (Workflow)",
+      "queryTime": 4,
+      "topScore": 0.569120794664499,
+      "primaryFileAccuracy": 0.5,
+      "topResults": [
+        {
+          "source": "knowledge/core/02b_flux_specifics.md",
+          "section": "Rank & Alpha",
+          "score": 0.569120794664499
+        },
+        {
+          "source": "knowledge/core/02_ostris_training_core.md",
+          "section": "5.4 LoRA Strength Testing",
+          "score": 0.516713072619885
+        },
+        {
+          "source": "knowledge/core/02b_flux_specifics.md",
+          "section": "Style LoRA for Flux",
+          "score": 0.49339539402926086
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "query": "Anti-aesthetic vs photorealistic - when?",
+      "pattern": "Pattern 2 (POV)",
+      "queryTime": 4,
+      "topScore": 0.5548780036754041,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "1. The Core Philosophy",
+          "score": 0.5548780036754041
+        },
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "Instagram Authentic Prompting (Anti-Aesthetic)",
+          "score": 0.46662083725957304
+        },
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "Minimum Viable Photorealistic Prompt",
+          "score": 0.41616589188375547
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "query": "Model-specific prompting for Nano Banana",
+      "pattern": "Pattern 1 (Model)",
+      "queryTime": 5,
+      "topScore": 0.6210598659334583,
+      "primaryFileAccuracy": 1,
+      "topResults": [
+        {
+          "source": "agent/agent.md",
+          "section": "When Nano Banana Pro Detected:",
+          "score": 0.6210598659334583
+        },
+        {
+          "source": "knowledge/core/08_model_specific_best_practices.md",
+          "section": "Model-Specific Prompting Best Practices",
+          "score": 0.5922522627258623
+        },
+        {
+          "source": "knowledge/core/08_model_specific_best_practices.md",
+          "section": "1. Nano Banana Pro (Gemini 3 Pro Image)",
+          "score": 0.5532681628821227
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "query": "Complete workflow idea to Instagram post",
+      "pattern": "Pattern 4 (Workflow)",
+      "queryTime": 3,
+      "topScore": 0.5496556583399292,
+      "primaryFileAccuracy": 0.3333333333333333,
+      "topResults": [
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "Clear Decision Tree",
+          "score": 0.5496556583399292
+        },
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "9. Workflow Integration",
+          "score": 0.4929289164352406
+        },
+        {
+          "source": "agent/agent.md",
+          "section": "Source",
+          "score": 0.4823187063235029
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "query": "POV for gym changing room photo?",
+      "pattern": "Pattern 2 (POV)",
+      "queryTime": 3,
+      "topScore": 0.45059261479419255,
+      "primaryFileAccuracy": 0.5,
+      "topResults": [
+        {
+          "source": "knowledge/core/07_instagram_authentic_v03.md",
+          "section": "Quick Reference: Scenario → POV Mapping",
+          "score": 0.45059261479419255
+        },
+        {
+          "source": "knowledge/core/08_model_specific_best_practices.md",
+          "section": "Multi-Image Editing Scenarios",
+          "score": 0.44077798239102034
+        },
+        {
+          "source": "knowledge/core/01_photorealistic_prompting_v03.md",
+          "section": "6.4 Nano Banana Pro",
+          "score": 0.427496787742175
+        }
+      ]
+    }
+  ],
+  "status": {
+    "query_time": "✅ PASS",
+    "relevance": "✅ PASS",
+    "primary_accuracy": "⚠️ BELOW TARGET"
+  }
+}

@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# RAG embeddings cache (users rebuild locally)
+rag/embeddings-cache.json
+rag/embeddings/
+rag/.cache/
+*.cache
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Claude Code metadata
+.claude/
+
+# Logs
+logs/
+*.log
+
+# Build outputs
+dist/
+build/
