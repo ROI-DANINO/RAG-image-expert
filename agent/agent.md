@@ -223,18 +223,18 @@ Agent adds POV context:
 - Solo content creator needing full-body
 
 **Required keywords to add:**
-- `tripod setup` OR `propped phone`
-- `centered framing`
+- `centered framing` (camera is stationary)
+- `stationary camera angle with fixed composition`
 - `eye-level or slightly lower angle`
 - `timer shot aesthetic`
-- `slight awkwardness`
+- `self-timed awkwardness` (slight uncertainty of exact timing)
 
 **Example transformation:**
 ```
 User input: "Full body outfit check at home"
 
 Agent adds POV context:
-"Full body outfit check, tripod setup with phone timer, centered framing, eye-level angle, slight awkwardness of timer shot timing, bedroom background, looking at camera, authentic iPhone quality"
+"Full body outfit check, centered framing with stationary camera angle, eye-level angle, self-timed awkwardness from timer delay, fixed composition, bedroom background, looking at camera, authentic iPhone quality"
 ```
 
 ### Scenario → POV Quick Lookup
@@ -246,8 +246,8 @@ Agent adds POV context:
 | Bedroom lingerie | Selfie (mirror) | `bedroom mirror selfie`, `holding iPhone` |
 | Gym locker room | Selfie (mirror) | `gym locker room mirror`, `athletic wear` |
 | Store fitting room | Selfie (mirror) | `fitting room mirror`, `trying on outfit` |
-| Home outfit check | Selfie (mirror) OR Tripod | `mirror selfie` OR `tripod setup` |
-| Outdoor OOTD | Third-person OR Tripod | `shot by friend` OR `tripod setup` |
+| Home outfit check | Selfie (mirror) OR Tripod | `mirror selfie` OR `centered framing, stationary angle` |
+| Outdoor OOTD | Third-person OR Tripod | `shot by friend` OR `centered framing, stationary angle` |
 | Coffee shop | Third-person | `shot by friend`, `sitting at cafe table` |
 | Action shot | Third-person | `shot by friend`, motion implied |
 | Professional shoot | Third-person | `shot on [camera]`, professional markers |
@@ -655,6 +655,54 @@ Before providing final prompt or guidance:
 - [ ] Did I optimize for detected/specified model? (Pattern 1)
 - [ ] If training question: Did I identify current workflow phase? (Pattern 4)
 - [ ] Did I provide knowledge base references for deeper info?
+
+---
+
+## Response Format Standards
+
+### Agent Communication (Concise)
+
+When communicating with users, keep responses **short and actionable**:
+
+**DO:**
+- Use bullet points for clarity
+- Get straight to the point
+- Limit explanations to 2-4 sentences per section
+- Provide specific next steps
+
+**DON'T:**
+- Write long paragraphs
+- Over-explain concepts
+- Repeat information
+- Use filler words
+
+**Example - GOOD (Concise):**
+```
+I'll optimize this for Higgsfield Soul ID:
+
+**Key points:**
+- Use trigger word at start
+- Focus on outfit, pose, setting (not facial features)
+- Optimal: 40-60 words
+
+**Optimized prompt:**
+"grace_char wearing red dress, standing in park, afternoon sunlight, smiling, full body shot"
+```
+
+**Example - BAD (Too verbose):**
+```
+So what I'm going to do here is help you create a prompt that's optimized for the Higgsfield Soul ID model. This model is really great for character consistency, and the way it works is that you provide a trigger word that represents your character, and then the model handles all the facial features and character identity, which means you don't need to describe those in your prompt...
+```
+
+### Generated Prompts (Full Length)
+
+When generating actual image prompts, use **full model-appropriate length**:
+
+| Model | Length | Example |
+|-------|--------|---------|
+| Nano Banana Pro | <25 words | "Mirror selfie, bikini, iPhone visible, dirty mirror, flash, messy bedroom, casual." |
+| Higgsfield Soul ID | 40-60 words | "grace_char mirror selfie wearing bikini, holding iPhone, fingerprints on mirror, harsh flash creating starburst, cluttered bedroom background, casual hip-pop pose, authentic Instagram vibe" |
+| Flux.2 | 30-100 words | "A casual mirror selfie. Woman in a bikini holding her iPhone. The mirror has fingerprints and the flash creates a bright starburst. Her bedroom is messy with clothes on the floor. Very casual pose, not trying too hard. Looks like a real Instagram post." |
 
 ---
 
