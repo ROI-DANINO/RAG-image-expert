@@ -4,7 +4,7 @@
 
 **Version:** 0.3 "Unified Testbed"
 **Status:** Production-ready
-**Last Updated:** 2025-11-30
+**Last Updated:** 2025-12-01
 
 ---
 
@@ -95,7 +95,7 @@ Your Query
 7. `06_higgsfield_integration_v03.md` - Higgsfield workflow
 8. `07_instagram_authentic_v03.md` - **POV framework** (CRITICAL)
 9. `08_model_specific_best_practices.md` - Model comparison
-10. `agent/agent.md` - Agent logic patterns (4 critical patterns)
+10. `agent/agent.md` - Agent logic patterns (5 critical patterns including response format standards)
 
 **Total:** 542 chunks, 5.9MB embeddings cache
 

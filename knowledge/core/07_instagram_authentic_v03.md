@@ -104,10 +104,10 @@ If there's no reason for a second person to be present, **don't imply one exists
 - Full-body but no photographer available
 
 **Visual markers:**
-- `tripod setup` or `propped phone`
 - `centered framing` (camera is stationary)
+- `stationary camera angle with fixed composition`
 - `eye-level or slightly lower angle`
-- `slight awkwardness` (don't know exact moment)
+- `self-timed awkwardness` (slight uncertainty of exact timing)
 - `timer shot aesthetic`
 
 **Example scenarios:**
@@ -319,7 +319,7 @@ Simulate amateur photographer:
 
 ### Outdoor OOTD (Street/Park)
 
-**POV:** Third-person (friend) OR Tripod | **Camera:** Friend's iPhone or tripod setup
+**POV:** Third-person (friend) OR Tripod | **Camera:** Friend's iPhone or stationary phone
 
 **Essential elements:** Full-body shot, urban street or park background, natural daylight, confident pose or "staged candid"
 
@@ -330,7 +330,7 @@ Simulate amateur photographer:
 
 **Prompt template (Tripod):**
 ```
-[character] standing on sidewalk wearing [outfit], tripod setup with phone timer, centered framing, eye-level angle, looking at camera, slight awkwardness of timer shot timing, urban street background with parked cars, natural daylight, full-body shot, authentic iPhone quality
+[character] standing on sidewalk wearing [outfit], centered framing with stationary camera angle, eye-level positioning, self-timed shot with slight timing awkwardness, looking at camera, urban street background with parked cars, natural daylight, full-body shot, authentic iPhone quality
 ```
 
 **Imperfections:** Slight motion blur (if candid), natural daylight (harsh or soft), busy background, awkward timing (if tripod)

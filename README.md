@@ -54,6 +54,7 @@ Results point you to specific files and sections with relevance scores.
 | Document | Purpose |
 |----------|---------|
 | [USER_GUIDE.md](USER_GUIDE.md) | Complete usage guide |
+| [CHANGELOG.md](CHANGELOG.md) | Version updates and changes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 | [versions/ARCHIVES.md](versions/ARCHIVES.md) | Version history & migration |
 | [docs/FINAL_IMPLEMENTATION_REPORT.md](docs/FINAL_IMPLEMENTATION_REPORT.md) | Technical deep-dive |
@@ -111,11 +112,12 @@ Knowledge Base (10 files, 5,983 lines)
 7. **Quick Reference** (97 lines) - Lookup tables
 
 ### Agent Logic
-- **4 Decision Patterns** (674 lines) - Formalized decision frameworks
+- **4 Decision Patterns** (722 lines) - Formalized decision frameworks
   1. Model inference protocol
   2. POV decision framework (selfie vs third-person)
   3. Reference image rules
   4. Fixed user workflow
+  5. Response format standards (concise vs full-length prompts)
 
 ---
 
@@ -178,7 +180,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 ```
 RAG-image-expert/
 ├── knowledge/core/          # 9 knowledge files (4,086 lines)
-├── agent/                   # Agent logic (674 lines)
+├── agent/                   # Agent logic (722 lines)
 ├── rag/                     # RAG system
 │   ├── simple-rag.js       # Search engine
 │   ├── test-queries.js     # Test suite
@@ -284,4 +286,4 @@ If you use this system in research or production:
 
 **Built with:** Node.js, Xenova Transformers, Semantic Search
 **Status:** Production-ready, actively maintained
-**Last Updated:** 2025-11-30
+**Last Updated:** 2025-12-01
