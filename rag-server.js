@@ -34,7 +34,7 @@ class RAGServer {
     // LLM Configuration
     this.apiKey = process.env.XAI_API_KEY || process.env.AI_API_KEY;
     this.baseURL = process.env.AI_BASE_URL || 'https://api.x.ai/v1';
-    this.model = process.env.AI_MODEL || 'grok-beta';
+    this.model = process.env.AI_MODEL || 'grok-4-1-thinking';
 
     this.isLocal = this.baseURL.includes('localhost') || this.baseURL.includes('127.0.0.1');
 
