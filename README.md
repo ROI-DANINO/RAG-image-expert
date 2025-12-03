@@ -249,6 +249,8 @@ The system includes pre-indexed knowledge on:
 Add your own knowledge by placing `.md` files in `knowledge/` and rebuilding the index:
 ```bash
 npm run build-index
+# Or run directly:
+node rag/simple-rag.js build-index
 ```
 
 ---
