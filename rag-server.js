@@ -6,6 +6,7 @@
  * Supports both Grok API and local LLMs (Ollama, LM Studio)
  */
 
+import 'dotenv/config';
 import { SimpleRAG } from './rag/simple-rag.js';
 import express from 'express';
 import cors from 'cors';
