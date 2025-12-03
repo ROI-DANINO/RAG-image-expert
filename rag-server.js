@@ -11,12 +11,20 @@ import { SimpleRAG } from './rag/simple-rag.js';
 import express from 'express';
 import cors from 'cors';
 import chalk from 'chalk';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from public directory
+app.use(express.static(join(__dirname, 'public')));
 
 class RAGServer {
   constructor() {
