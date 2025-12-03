@@ -240,7 +240,7 @@ Keep responses helpful, well-structured, and easy to scan.`;
     // Stateful conversation endpoint
     app.post('/conversation', async (req, res) => {
       try {
-        const { sessionId, message, topK = 5 } = req.body;
+        const { sessionId, message, topK = 5, images } = req.body;
 
         if (!sessionId || !message) {
           return res.status(400).json({ error: 'sessionId and message are required' });
@@ -252,12 +252,31 @@ Keep responses helpful, well-structured, and easy to scan.`;
         const results = await this.queryRAG(message, topK);
         const context = this.formatContext(results);
 
+        // Build user message content
+        let userContent;
+        if (images && images.length > 0) {
+          // Vision message with images
+          userContent = [
+            { type: 'text', text: `Context:\n${context}\n\nQuestion: ${message}` }
+          ];
+          // Add images
+          for (const imageData of images) {
+            userContent.push({
+              type: 'image_url',
+              image_url: { url: imageData }
+            });
+          }
+        } else {
+          // Text-only message
+          userContent = `Context:\n${context}\n\nQuestion: ${message}`;
+        }
+
         const messages = [
           { role: 'system', content: this.systemPrompt },
           ...history,
           {
             role: 'user',
-            content: `Context:\n${context}\n\nQuestion: ${message}`
+            content: userContent
           }
         ];
 

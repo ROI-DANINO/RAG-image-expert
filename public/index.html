@@ -292,6 +292,75 @@
             transform: translateX(5px);
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
         }
+
+        /* Image upload styles */
+        .image-preview-container {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .image-preview {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 20px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview-remove:hover {
+            background: rgba(255, 0, 0, 1);
+        }
+
+        #imageUploadButton {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 8px;
+            color: #667eea;
+            transition: transform 0.2s;
+        }
+
+        #imageUploadButton:hover {
+            transform: scale(1.1);
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
@@ -322,12 +391,20 @@
         </div>
 
         <div class="input-container">
-            <input
-                type="text"
-                id="messageInput"
-                placeholder="Type your message here..."
-                onkeypress="handleKeyPress(event)"
-            >
+            <input type="file" id="imageFileInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+            <button id="imageUploadButton" onclick="document.getElementById('imageFileInput').click()" title="Upload image">
+                📎
+            </button>
+            <div class="input-wrapper">
+                <div id="imagePreviewContainer" style="display: none;"></div>
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Type your message or paste an image (Ctrl+V)..."
+                    onkeypress="handleKeyPress(event)"
+                    onpaste="handlePaste(event)"
+                >
+            </div>
             <button id="sendButton" onclick="sendMessage()">Send</button>
         </div>
     </div>
@@ -336,6 +413,7 @@
     <script>
         let sessionId = 'session-' + Date.now();
         let isFirstMessage = true;
+        let attachedImages = [];
 
         function addMessage(content, isUser, context = null) {
             const chatContainer = document.getElementById('chatContainer');
@@ -412,15 +490,32 @@
             const sendButton = document.getElementById('sendButton');
             const message = input.value.trim();
 
-            if (!message) return;
+            if (!message && attachedImages.length === 0) return;
 
             // Disable input
             input.disabled = true;
             sendButton.disabled = true;
 
             // Add user message
-            addMessage(message, true);
+            addMessage(message || '[Image attached]', true);
             input.value = '';
+
+            // Prepare request body
+            const requestBody = {
+                sessionId: sessionId,
+                message: message || 'Please analyze this image',
+                topK: 5
+            };
+
+            // Add images if attached
+            if (attachedImages.length > 0) {
+                requestBody.images = attachedImages.map(img => img.data);
+            }
+
+            // Clear attached images and preview
+            const imagesToSend = [...attachedImages];
+            attachedImages = [];
+            updateImagePreview();
 
             // Show loading
             showLoading();
@@ -431,11 +526,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        sessionId: sessionId,
-                        message: message,
-                        topK: 5
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
                 hideLoading();
@@ -469,6 +560,72 @@
             input.value = element.textContent.trim();
             input.focus();
             sendMessage();
+        }
+
+        // Handle paste event for images
+        function handlePaste(event) {
+            const items = event.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    event.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        addImageToPreview(file);
+                    }
+                }
+            }
+        }
+
+        // Handle file upload
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                addImageToPreview(file);
+            }
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Add image to preview
+        function addImageToPreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageData = {
+                    data: e.target.result,
+                    name: file.name
+                };
+                attachedImages.push(imageData);
+                updateImagePreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Update image preview display
+        function updateImagePreview() {
+            const container = document.getElementById('imagePreviewContainer');
+
+            if (attachedImages.length === 0) {
+                container.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+
+            container.style.display = 'block';
+            container.className = 'image-preview-container';
+            container.innerHTML = attachedImages.map((img, index) => `
+                <div class="image-preview">
+                    <img src="${img.data}" alt="${img.name}">
+                    <button class="image-preview-remove" onclick="removeImage(${index})">×</button>
+                </div>
+            `).join('');
+        }
+
+        // Remove image from preview
+        function removeImage(index) {
+            attachedImages.splice(index, 1);
+            updateImagePreview();
         }
 
         // Focus input on load
