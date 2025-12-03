@@ -53,6 +53,7 @@ Be helpful, precise, and efficient.`;
     console.log(chalk.cyan('Initializing RAG system...'));
     this.rag = new SimpleRAG();
     await this.rag.initialize();
+    this.rag.loadCache();
     console.log(chalk.green('✓ RAG system ready'));
   }
 
