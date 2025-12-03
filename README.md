@@ -20,12 +20,33 @@ Retrieve-Augmented Generation (RAG) system specialized in photorealistic prompts
 
 ## Quick Start
 
+### Prerequisites
+
+Before starting, ensure you have:
+- **Node.js 16+** installed ([download here](https://nodejs.org/))
+- **npm** (comes with Node.js)
+- **git** (for cloning the repository)
+
+**For Docker/container users:**
+```bash
+# Install Node.js and git
+apt-get update && apt-get install -y nodejs npm git
+
+# Or for newer Node.js (recommended):
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt-get install -y nodejs git
+```
+
 ### 1. Install
 ```bash
 git clone https://github.com/ROI-DANINO/RAG-image-expert.git
 cd RAG-image-expert
 npm install
 ```
+
+**Note:** `npm install` will download:
+- Dependencies to `node_modules/` (~85 packages)
+- Embedding model (~90MB, one-time download on first use)
 
 ### 2. Configure LLM
 ```bash
@@ -127,21 +148,52 @@ See [`docs/LLM_INTEGRATION.md`](docs/LLM_INTEGRATION.md) for detailed setup inst
 
 ## Docker Quick Start
 
-**User testing in fresh container:**
+### Testing in Fresh Container (Grok API)
+
 ```bash
-# Pull and run
+# 1. Pull and run Node.js container
 docker run -it node:18 bash
 
-# Inside container:
+# 2. Inside container - install git (if needed)
+apt-get update && apt-get install -y git
+
+# 3. Clone and setup
 git clone https://github.com/ROI-DANINO/RAG-image-expert.git
 cd RAG-image-expert
 npm install
+
+# 4. Configure for Grok API
 cp .env.example .env
+nano .env  # or vi .env
+# Add your XAI_API_KEY=your-key-here
+# Save and exit (Ctrl+X, Y, Enter for nano)
 
-# Edit .env with your configuration
-# For Grok API: add XAI_API_KEY
-# For local LLM: set AI_BASE_URL to your host's Ollama
+# 5. Start chatting!
+npm run chat
+```
 
+### RunPod / Local LLM Setup
+
+```bash
+# 1. Install Ollama on RunPod
+curl -fsSL https://ollama.com/install.sh | sh
+
+# 2. Pull a model
+ollama pull llama3.2
+
+# 3. Clone and setup
+git clone https://github.com/ROI-DANINO/RAG-image-expert.git
+cd RAG-image-expert
+npm install
+
+# 4. Configure for local LLM
+cp .env.example .env
+nano .env
+# Set: AI_BASE_URL=http://localhost:11434/v1
+# Set: AI_MODEL=llama3.2
+# No API key needed!
+
+# 5. Start chatting
 npm run chat
 ```
 
@@ -203,17 +255,51 @@ npm run build-index
 
 ## Troubleshooting
 
+### Docker/Container Issues
+
+**"git: command not found"**
+```bash
+apt-get update && apt-get install -y git
+```
+
+**"npm: command not found" or old Node.js version**
+```bash
+# Install newer Node.js
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt-get install -y nodejs
+node --version  # Should show v18.x or higher
+```
+
+**"Cannot find module" errors**
+```bash
+# Make sure you're in the project root
+cd RAG-image-expert
+npm install
+```
+
+### LLM Integration Issues
+
 **"No API key found"**
-- Create `.env` file from `.env.example`
+- Create `.env` file from `.env.example`: `cp .env.example .env`
 - Add your API key (not needed for localhost)
+- Verify the file exists: `ls -la .env`
 
 **"Connection refused" (local LLM)**
 - Make sure Ollama/LM Studio is running
 - Check the port matches your config
+- For Ollama: Run `ollama list` to verify models are installed
+
+**"Module 'simple-rag.js' not found"**
+```bash
+# The RAG files are in the rag/ subdirectory
+cd rag
+ls simple-rag.js  # Should exist
+```
 
 **Slow responses**
 - Use smaller models locally (e.g., `llama3.2` not `llama3.2:70b`)
 - Reduce `topK` for less context
+- Check your system has enough RAM (4GB+ recommended)
 
 ---
 
