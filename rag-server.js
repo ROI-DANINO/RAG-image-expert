@@ -21,7 +21,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+// Increase payload limit to support base64 images (default is 100kb)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static files from public directory
 app.use(express.static(join(__dirname, 'public')));

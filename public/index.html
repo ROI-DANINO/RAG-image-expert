@@ -182,6 +182,12 @@
             font-size: 14px;
             outline: none;
             transition: border-color 0.3s;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            resize: none;
+            overflow-y: auto;
+            min-height: 44px;
+            max-height: 150px;
+            line-height: 1.5;
         }
 
         #messageInput:focus {
@@ -397,13 +403,14 @@
             </button>
             <div class="input-wrapper">
                 <div id="imagePreviewContainer" style="display: none;"></div>
-                <input
-                    type="text"
+                <textarea
                     id="messageInput"
-                    placeholder="Type your message or paste an image (Ctrl+V)..."
-                    onkeypress="handleKeyPress(event)"
+                    placeholder="Type your message or paste an image (Ctrl+V)... Press Shift+Enter for new line"
+                    onkeydown="handleKeyPress(event)"
                     onpaste="handlePaste(event)"
-                >
+                    oninput="autoResize(this)"
+                    rows="1"
+                ></textarea>
             </div>
             <button id="sendButton" onclick="sendMessage()">Send</button>
         </div>
@@ -550,9 +557,18 @@
         }
 
         function handleKeyPress(event) {
-            if (event.key === 'Enter') {
+            // Enter without Shift = send message
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
                 sendMessage();
             }
+            // Shift+Enter = new line (default textarea behavior)
+        }
+
+        // Auto-resize textarea as user types
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
         }
 
         function sendExample(element) {
