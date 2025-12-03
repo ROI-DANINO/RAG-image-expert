@@ -1,351 +1,249 @@
-# RAG-image-expert
+# RAG Image Expert
 
-[![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.3.0-green.svg)](https://github.com/ROI-DANINO/RAG-image-expert/releases/tag/v0.3.0)
-[![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
+**Semantic search engine + LLM integration for AI image generation workflows**
 
-**RAG-powered expert system for AI image generation and LoRA training**
+Retrieve-Augmented Generation (RAG) system specialized in photorealistic prompts, LoRA training, and Instagram authenticity. Works with any OpenAI-compatible LLM (Grok, OpenAI, Ollama, LM Studio, etc.).
 
 ---
 
-## What Is This?
+## Features
 
-A **semantic search engine** for AI image generation workflows, powered by Retrieval-Augmented Generation (RAG):
-
-- 📚 **10 knowledge files** (5,983 lines) - Photorealistic prompting, LoRA training, Instagram authenticity
-- ⚡ **7ms queries** - Semantic search (not keyword matching)
-- 🔍 **Offline-first** - No API keys, runs completely locally
-- 🎯 **Fine-grained precision** - 542 searchable chunks, high relevance
-- ✅ **Production-tested** - 20+ baseline queries validated
-
-**Perfect for:** Image generation practitioners, LoRA trainers, Instagram content creators.
+- **Fast Semantic Search**: ~7ms query response using local embeddings
+- **LLM Integration**: Supports any OpenAI-compatible API
+- **Multi-Query RAG**: Automatic query expansion for better context
+- **Local & API**: Works with both local LLMs and cloud APIs
+- **REST API Server**: Deploy as a service
+- **CLI Chat**: Interactive terminal interface
+- **Offline Embeddings**: No API calls for search (Xenova transformers)
 
 ---
 
-## Quick Start (2 minutes)
+## Quick Start
 
-### Prerequisites
-
-Before starting, ensure you have:
-- **Node.js 16+** installed ([download here](https://nodejs.org/))
-- **npm** (comes with Node.js)
-- **git** (for cloning the repository)
-
-**For Docker users:** Install Node.js and git in your container:
-```bash
-apt-get update && apt-get install -y nodejs npm git
-```
-
-### 1. Install Dependencies
+### 1. Install
 ```bash
 git clone https://github.com/ROI-DANINO/RAG-image-expert.git
-cd RAG-image-expert/rag
+cd RAG-image-expert
 npm install
 ```
 
-**Note:** `npm install` will download:
-- Dependencies to `node_modules/` (~85 packages)
-- Embedding model (~90MB, one-time download on first use)
-
-These files are NOT included in the git repository and must be generated locally.
-
-### 2. Build Embeddings Index (Required First Time)
+### 2. Configure LLM
 ```bash
-node simple-rag.js build-index
+cp .env.example .env
+# Edit .env with your API key or local LLM settings
 ```
 
-This creates the embeddings cache (~6MB) from the knowledge base. Required before searching.
-
-### 3. Search the Knowledge Base
+**For Grok API:**
 ```bash
-node simple-rag.js search "How do I make skin look realistic for Instagram?"
+XAI_API_KEY=your-key-here
+AI_MODEL=grok-beta
 ```
 
-### 4. Get Instant Answers
-Results point you to specific files and sections with relevance scores.
+**For Local LLM (Ollama):**
+```bash
+# Install Ollama first: curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.2
 
-**Example output:**
+# In .env:
+AI_BASE_URL=http://localhost:11434/v1
+AI_MODEL=llama3.2
+# No API key needed!
 ```
-📚 Top 3 Results:
-[1] Source: knowledge/core/01_photorealistic_prompting_v03.md | Score: 0.654
-    Section: 2.3 Skin Texture by Detail Level
-    Lines: 141-158
+
+### 3. Start Chatting
+```bash
+# CLI chat
+npm run chat
+
+# OR start REST API server
+npm start
 ```
 
 ---
 
-## Documentation
+## Usage
 
-| Document | Purpose |
-|----------|---------|
-| [USER_GUIDE.md](USER_GUIDE.md) | Complete usage guide |
-| [CHANGELOG.md](CHANGELOG.md) | Version updates and changes |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
-| [versions/ARCHIVES.md](versions/ARCHIVES.md) | Version history & migration |
-| [docs/FINAL_IMPLEMENTATION_REPORT.md](docs/FINAL_IMPLEMENTATION_REPORT.md) | Technical deep-dive |
-| [rag/RAG_REBUILD_GUIDE.md](rag/RAG_REBUILD_GUIDE.md) | How RAG works |
+### CLI Chat Mode
+```bash
+npm run chat
+```
+
+Interactive terminal chat with RAG-enhanced responses.
+
+### REST API Server
+```bash
+npm start
+# Server runs on http://localhost:3000
+```
+
+#### API Endpoints
+
+**Health Check:**
+```bash
+curl http://localhost:3000/health
+```
+
+**Search (RAG only, no LLM):**
+```bash
+curl -X POST http://localhost:3000/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Instagram selfie techniques", "topK": 5}'
+```
+
+**Chat (Stateless):**
+```bash
+curl -X POST http://localhost:3000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "How do I train a LoRA?"}'
+```
+
+**Conversation (Stateful with history):**
+```bash
+curl -X POST http://localhost:3000/conversation \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "user123",
+    "message": "What are the best practices for Instagram prompts?"
+  }'
+```
 
 ---
 
-## Architecture
+## Supported LLMs
 
-```
-Knowledge Base (10 files, 5,983 lines)
-          ↓
-    [Semantic Chunking] → 542 chunks (500 chars, table-preserved)
-          ↓
-    [Xenova Embeddings] → 384-dim local vectors
-          ↓
-    [Cosine Similarity] → 7ms semantic search
-          ↓
-    [Relevance Ranking] → Top 3 results with scores
-```
+The system works with **any OpenAI-compatible API**:
 
-**Key Features:**
-- Embedding Model: Xenova/all-MiniLM-L6-v2 (offline, no API)
-- Search Algorithm: Cosine similarity (semantic closeness)
-- Cache: JSON-based embeddings (5.9MB, regenerates on demand)
-- Decision Logic: 4 formalized agent patterns (see agent/agent.md)
+| Provider | Configuration |
+|----------|---------------|
+| **xAI Grok** | Default, API key required |
+| **OpenAI** | Set `AI_BASE_URL=https://api.openai.com/v1` |
+| **Ollama** (local) | Set `AI_BASE_URL=http://localhost:11434/v1` |
+| **LM Studio** (local) | Set `AI_BASE_URL=http://localhost:1234/v1` |
+| **Custom** | Any OpenAI-compatible endpoint |
+
+See [`docs/LLM_INTEGRATION.md`](docs/LLM_INTEGRATION.md) for detailed setup instructions.
 
 ---
 
-## Performance Metrics
+## Docker Quick Start
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Query Time | <400ms | 7ms | ✅ 57x faster |
-| Relevance | >0.60 | 0.616 | ✅ Good matches |
-| Knowledge Files | 10 | 10 | ✅ Complete |
-| Chunks | ~127 | 542 | ✅ Fine-grained |
+**User testing in fresh container:**
+```bash
+# Pull and run
+docker run -it node:18 bash
 
-*See `SYSTEM/efficiency-metrics.json` for detailed benchmarks.*
+# Inside container:
+git clone https://github.com/ROI-DANINO/RAG-image-expert.git
+cd RAG-image-expert
+npm install
+cp .env.example .env
+
+# Edit .env with your configuration
+# For Grok API: add XAI_API_KEY
+# For local LLM: set AI_BASE_URL to your host's Ollama
+
+npm run chat
+```
+
+---
+
+## Project Structure
+
+```
+RAG-image-expert/
+├── rag-chat.js          # CLI chat interface
+├── rag-server.js        # REST API server
+├── rag/
+│   ├── simple-rag.js    # Core RAG implementation
+│   └── knowledge.db     # SQLite + embeddings
+├── docs/
+│   └── LLM_INTEGRATION.md  # Detailed LLM setup guide
+├── .env.example         # Configuration template
+└── package.json         # Dependencies & scripts
+```
+
+---
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `XAI_API_KEY` | Yes* | - | API key for LLM (*not needed for localhost) |
+| `AI_BASE_URL` | No | `https://api.x.ai/v1` | LLM API endpoint |
+| `AI_MODEL` | No | `grok-beta` | Model name |
+| `PORT` | No | `3000` | Server port |
+
+---
+
+## How It Works
+
+1. **Semantic Search**: User query → Xenova embeddings → Cosine similarity → Top K chunks
+2. **Query Expansion**: Automatically adds related queries (e.g., "Instagram" → also searches "POV framework")
+3. **Context Building**: Format retrieved chunks with scores and sections
+4. **LLM Generation**: Send context + query to LLM → Generate response
+5. **Multi-turn Support**: Conversation history maintained per session
 
 ---
 
 ## Knowledge Base
 
-### Core Content
-1. **Photorealistic Prompting** (710 lines) - Detailed techniques for realistic imagery
-2. **LoRA Training** - Split by model for clarity:
-   - **Ostris Core** (694 lines) - Fundamental training concepts
-   - **Qwen Specifics** (409 lines) - Qwen model parameters
-   - **Flux Specifics** (483 lines) - Flux model parameters
-3. **Model Comparison** (282 lines) - Qwen vs Flux vs Nano Banana
-4. **Instagram Authenticity** (506 lines) - POV framework & authentic prompting
-5. **Higgsfield Integration** (498 lines) - Workflow integration
-6. **Troubleshooting** (407 lines) - Problem diagnosis & solutions
-7. **Quick Reference** (97 lines) - Lookup tables
+The system includes pre-indexed knowledge on:
+- Photorealistic prompt engineering
+- LoRA training (Ostris, Qwen, Flux models)
+- Instagram authenticity framework
+- POV selection and camera techniques
+- Imperfection layers for realism
 
-### Agent Logic
-- **4 Decision Patterns** (722 lines) - Formalized decision frameworks
-  1. Model inference protocol
-  2. POV decision framework (selfie vs third-person)
-  3. Reference image rules
-  4. Fixed user workflow
-  5. Response format standards (concise vs full-length prompts)
-
----
-
-## Version History
-
-| Version | Release | Status | Key Features |
-|---------|---------|--------|--------------|
-| [v0.3](https://github.com/ROI-DANINO/RAG-image-expert/releases/tag/v0.3.0) | Current | Production | Unified system, optimized RAG, formalized agent logic |
-| [v0.2](https://github.com/ROI-DANINO/RAG-image-expert/releases/tag/v0.2.0) | Archive | Stable | Instagram support, multi-model, 8 docs |
-| [v0.1](https://github.com/ROI-DANINO/RAG-image-expert/releases/tag/v0.1.0) | Archive | Stable | Original efficient baseline, 6 docs |
-
-See [versions/ARCHIVES.md](versions/ARCHIVES.md) for migration paths and historical details.
-
----
-
-## Common Searches
-
-### Prompting
+Add your own knowledge by placing `.md` files in `knowledge/` and rebuilding the index:
 ```bash
-# Realistic skin for Instagram
-node simple-rag.js search "skin texture Instagram realistic"
-
-# Bedroom selfie scenario
-node simple-rag.js search "bedroom mirror selfie prompt"
-```
-
-### Training
-```bash
-# Qwen LoRA parameters
-node simple-rag.js search "Qwen training parameters"
-
-# Flux vs Qwen comparison
-node simple-rag.js search "Flux vs Qwen for Instagram"
-```
-
-### Troubleshooting
-```bash
-# Fix plastic-looking skin
-node simple-rag.js search "plastic skin fix"
-
-# Hands generation issues
-node simple-rag.js search "hands generation problems"
-```
-
----
-
-## Adding Knowledge
-
-1. Create/edit `.md` file in `knowledge/core/`
-2. Follow existing format (headers, tables, examples)
-3. Rebuild embeddings: `cd rag && node simple-rag.js build-index`
-4. Test with baseline queries
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
----
-
-## Directory Structure
-
-```
-RAG-image-expert/
-├── knowledge/core/          # 9 knowledge files (4,086 lines)
-├── agent/                   # Agent logic (722 lines)
-├── rag/                     # RAG system
-│   ├── simple-rag.js       # Search engine
-│   ├── test-queries.js     # Test suite
-│   ├── config.json         # Configuration
-│   └── package.json        # Dependencies
-├── SYSTEM/                  # System tracking
-│   ├── version.json        # Version & status
-│   ├── knowledge-map.json  # File registry
-│   └── efficiency-metrics.json  # Performance log
-├── docs/                    # Documentation
-│   └── FINAL_IMPLEMENTATION_REPORT.md
-├── versions/                # v0.1 & v0.2 snapshots
-│   ├── v0.1-snapshot/
-│   ├── v0.2-snapshot/
-│   └── ARCHIVES.md
-├── .github/                 # GitHub templates
-│   └── ISSUE_TEMPLATE/
-├── USER_GUIDE.md           # User documentation
-├── CONTRIBUTING.md         # Contribution guide
-└── README.md               # This file
-```
-
----
-
-## Common Commands
-
-```bash
-# Search knowledge base
-node rag/simple-rag.js search "your question here"
-
-# Run full test suite
-node rag/test-queries.js
-
-# Rebuild embeddings (if docs change)
-node rag/simple-rag.js build-index
-
-# View performance metrics
-cat SYSTEM/efficiency-metrics.json
+npm run build-index
 ```
 
 ---
 
 ## Troubleshooting
 
-### "git: command not found" (Docker/containers)
-```bash
-apt-get update && apt-get install -y git
-```
+**"No API key found"**
+- Create `.env` file from `.env.example`
+- Add your API key (not needed for localhost)
 
-### "npm: command not found" (Docker/containers)
-```bash
-apt-get update && apt-get install -y nodejs npm
-# Or for newer Node.js version (recommended):
-curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-apt-get install -y nodejs
-```
+**"Connection refused" (local LLM)**
+- Make sure Ollama/LM Studio is running
+- Check the port matches your config
 
-### "ERR_REQUIRE_ESM" error
-This is fixed in the latest version. Update your repository:
-```bash
-git pull origin main
-cd rag && npm install
-```
-
-### "Cache file not found" error
-Run the build-index command first:
-```bash
-cd rag
-node simple-rag.js build-index
-```
-
-### Files Not Downloaded
-The following are generated locally and NOT in git:
-- `rag/node_modules/` - Run `npm install` to create
-- `rag/embeddings/` - Run `node simple-rag.js build-index` to create
-- `rag/package-lock.json` - Auto-generated by npm
-
----
-
-## Technical Details
-
-**Embedding Model:** Xenova/all-MiniLM-L6-v2
-- 384 dimensions
-- Runs locally (no API)
-- ~90MB download (one-time)
-- Battle-tested for semantic search
-
-**Chunking Strategy:**
-- Size: 500 characters
-- Overlap: 100 characters (context preservation)
-- Table preservation: Enabled (keeps tables intact)
-- Section-aware: Respects markdown headers
-
-**Search Algorithm:**
-- Cosine similarity (measures semantic closeness)
-- Returns top 3 results
-- Scores 0-1 scale (>0.6 = good match)
+**Slow responses**
+- Use smaller models locally (e.g., `llama3.2` not `llama3.2:70b`)
+- Reduce `topK` for less context
 
 ---
 
 ## License
 
-BSD-3-Clause License - See [LICENSE](LICENSE) file for details.
+BSD-3-Clause
 
 ---
 
 ## Contributing
 
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- Knowledge base standards
-- Testing procedures
-- Commit conventions
-- Review process
+Issues and PRs welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## Citation
+## Next Steps for Testing
 
-If you use this system in research or production:
+**With Docker (fresh environment):**
+1. Clone the repo
+2. Run `npm install`
+3. Copy `.env.example` to `.env`
+4. Add your Grok API key
+5. Run `npm run chat`
 
-```bibtex
-@software{rag_image_expert,
-  title={RAG-Powered AI Image Generation Expert System},
-  author={Danino, ROI},
-  year={2025},
-  url={https://github.com/ROI-DANINO/RAG-image-expert}
-}
-```
-
----
-
-## Support
-
-- **Questions:** See [USER_GUIDE.md](USER_GUIDE.md)
-- **Issues:** [GitHub Issues](https://github.com/ROI-DANINO/RAG-image-expert/issues)
-- **Documentation:** [Full docs](docs/)
-- **Performance:** [SYSTEM/efficiency-metrics.json](SYSTEM/efficiency-metrics.json)
+**With RunPod (local LLM):**
+1. Start Ollama on RunPod
+2. Pull a model: `ollama pull llama3.2`
+3. In `.env`: Set `AI_BASE_URL=http://localhost:11434/v1`
+4. Run `npm run chat` - no API key needed!
 
 ---
 
-**Built with:** Node.js, Xenova Transformers, Semantic Search
-**Status:** Production-ready, actively maintained
-**Last Updated:** 2025-12-01
+**Ready to test? Let me know if you hit any issues!**

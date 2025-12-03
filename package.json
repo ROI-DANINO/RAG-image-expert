@@ -1,0 +1,34 @@
+{
+  "name": "rag-image-expert",
+  "version": "0.5.0",
+  "description": "RAG-powered AI image generation assistant with LLM integration",
+  "type": "module",
+  "main": "rag-server.js",
+  "scripts": {
+    "start": "node rag-server.js",
+    "chat": "node rag-chat.js",
+    "server": "node rag-server.js",
+    "build-index": "cd rag && node simple-rag.js build-index",
+    "test": "cd rag && node test-queries.js"
+  },
+  "keywords": [
+    "rag",
+    "llm",
+    "ai",
+    "image-generation",
+    "semantic-search"
+  ],
+  "author": "ROI-DANINO",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "@xenova/transformers": "^2.17.2",
+    "better-sqlite3": "^9.6.0",
+    "chalk": "^4.1.2",
+    "commander": "^14.0.2",
+    "cors": "^2.8.5",
+    "express": "^4.22.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
