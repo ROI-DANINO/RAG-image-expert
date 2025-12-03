@@ -8,9 +8,15 @@
 
 const fs = require('fs');
 const path = require('path');
-const { pipeline } = require('@xenova/transformers');
 
 const CONFIG_FILE = path.join(__dirname, 'config.json');
+
+// Dynamic import for ES module
+let pipeline;
+async function loadTransformers() {
+  const transformers = await import('@xenova/transformers');
+  pipeline = transformers.pipeline;
+}
 
 // Default configuration
 const DEFAULT_CONFIG = {
@@ -45,6 +51,7 @@ class SimpleRAG {
 
   async initialize() {
     console.log('Initializing embedding model...');
+    await loadTransformers();
     this.embedder = await pipeline('feature-extraction', this.config.model);
     console.log('✅ Model loaded');
   }
