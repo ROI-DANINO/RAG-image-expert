@@ -16,6 +16,15 @@ rag/feedback_images/
 # Session data (private conversation data)
 rag/sessions.db
 
+# Knowledge database (rebuilt from markdown sources)
+rag/knowledge.db
+
+# Archive directory (backup files)
+archive/
+
+# Duplicate/misplaced directories
+rag/rag/
+
 # Environment
 .env
 .env.local
