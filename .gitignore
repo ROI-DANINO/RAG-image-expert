@@ -13,6 +13,9 @@ rag/.cache/
 rag/feedback.db
 rag/feedback_images/
 
+# Session data (private conversation data)
+rag/sessions.db
+
 # Environment
 .env
 .env.local

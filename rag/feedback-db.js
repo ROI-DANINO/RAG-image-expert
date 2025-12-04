@@ -31,7 +31,22 @@ class FeedbackDB {
       )
     `);
 
-    // Create index for faster queries
+    // Migration: Add new columns if they don't exist
+    try {
+      this.db.exec(`ALTER TABLE feedback ADD COLUMN message_id TEXT`);
+      this.db.exec(`ALTER TABLE feedback ADD COLUMN branch_id TEXT`);
+      this.db.exec(`ALTER TABLE feedback ADD COLUMN query_text TEXT`);
+      this.db.exec(`ALTER TABLE feedback ADD COLUMN response_text TEXT`);
+      this.db.exec(`ALTER TABLE feedback ADD COLUMN rag_context TEXT`);
+      console.log('✅ Feedback table extended with new columns');
+    } catch (err) {
+      // Columns already exist, ignore error
+      if (!err.message.includes('duplicate column name')) {
+        console.error('Migration error:', err.message);
+      }
+    }
+
+    // Create indexes for faster queries
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_session
       ON feedback(session_id);
@@ -42,6 +57,16 @@ class FeedbackDB {
       ON feedback(timestamp);
     `);
 
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_feedback_message
+      ON feedback(message_id);
+    `);
+
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_feedback_branch
+      ON feedback(branch_id);
+    `);
+
     console.log('✅ Feedback database initialized');
   }
 
@@ -49,7 +74,20 @@ class FeedbackDB {
    * Save feedback entry
    */
   saveFeedback(data) {
-    const { feedbackId, sessionId, timestamp, thumbs, rating, notes, resultImage } = data;
+    const {
+      feedbackId,
+      sessionId,
+      timestamp,
+      thumbs,
+      rating,
+      notes,
+      resultImage,
+      messageId,
+      branchId,
+      queryText,
+      responseText,
+      ragContext
+    } = data;
 
     let imagePath = null;
 
@@ -73,11 +111,26 @@ class FeedbackDB {
     }
 
     const stmt = this.db.prepare(`
-      INSERT INTO feedback (feedback_id, session_id, timestamp, thumbs, rating, notes, result_image_path)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO feedback (
+        feedback_id, session_id, timestamp, thumbs, rating, notes, result_image_path,
+        message_id, branch_id, query_text, response_text, rag_context
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    stmt.run(feedbackId, sessionId, timestamp, thumbs || null, rating || null, notes || null, imagePath);
+    stmt.run(
+      feedbackId,
+      sessionId,
+      timestamp,
+      thumbs || null,
+      rating || null,
+      notes || null,
+      imagePath,
+      messageId || null,
+      branchId || null,
+      queryText || null,
+      responseText || null,
+      ragContext ? JSON.stringify(ragContext) : null
+    );
 
     return { success: true, feedbackId };
   }
