@@ -1,9 +1,9 @@
 # Flux Training Specifics
 
-**Version:** v0.3
+**Version:** v0.4
 **Model:** Flux.1 Dev / Flux.2
 **Parameters:** Community-tested for character LoRA
-**Last Updated:** 2025-11-28
+**Last Updated:** 2025-12-04
 
 **Prerequisites:** Read `02_ostris_training_core.md` first
 
@@ -33,11 +33,28 @@ network:
 | 16 | Minimal (not recommended) | May underfit |
 | **32** | **Character LoRA** ⭐ | **Balanced** |
 | 64 | Complex/style LoRA | High detail |
-| 128 | Style LoRA only | Overfit risk for characters |
+| 128 | Style LoRA (experimental) | High overfit risk for characters |
 
 ---
 
 ## 2. Learning Rate
+
+### Failure Example: Underfitting due to Low LR
+
+Because Flux is trained with a lower learning rate (`0.0001`), it is more susceptible to underfitting if the rate is too low or the training is too short. 
+
+**Symptom:**
+- Generated images look generic and do not resemble your character.
+- The trigger word seems to have little to no effect, even at high LoRA strength.
+- The model produces varied images, but none of them are correct.
+
+**Fix:**
+- **Increase LR:** Make a small increment to `0.000125` or `0.00015`.
+- **Train Longer:** Add 2-3 more epochs to the training run.
+- **Use a Later Checkpoint:** An underfit model may simply need more training time. Test the checkpoints from the final epochs.
+
+---
+
 
 ### Recommended: 0.0001 (1e-4)
 
@@ -93,6 +110,15 @@ training:
 ---
 
 ## 4. Text Encoder Settings
+
+### When to Experiment: Finding the Right Balance
+
+- **Start with `false`:** For most character LoRAs, this is faster, more stable, and produces excellent results.
+- **Switch to `true` if:** You experience weak prompt following, or if the character needs to interact with complex scenes and objects. Training the text encoder can help the LoRA better understand nuanced prompts.
+- **Consider the trade-off:** Enabling this will increase VRAM usage and training time, so use it when the benefits outweigh the costs.
+
+---
+
 
 ### Can Train (Unlike Qwen)
 
@@ -157,7 +183,7 @@ model:
 
 ```yaml
 sample:
-  sampler: "flowmatch"    # Must match training
+  sampler: "flowmatch"    # Recommended to match training for best results. Other samplers can be used for creative effects.
   sample_steps: 28-30     # Slightly higher than Qwen
   guidance_scale: 3.5-4.0 # Flux likes higher CFG
 ```
@@ -253,7 +279,7 @@ config:
 
 ### Prompt Structure
 
-**Optimal length:** 30-100 words (longer than Qwen)
+**Prompt Length:** Flux is highly flexible. While **30-80 words** is often a sweet spot for detailed images, shorter prompts (**10-30 words**) are effective for exploration, and complex scenes can benefit from **80+ words**.
 
 **Format:** Full sentences, descriptive
 
@@ -322,8 +348,8 @@ cd ComfyUI/custom_nodes
 |--------|------|------|
 | **Rank** | 32-64 | 16 |
 | **LR** | 0.0001 | 0.0002 |
-| **Text Encoder** | Can be true | Must be false |
-| **Prompt Style** | Natural language (30-100 words) | Concise (50-200 chars) |
+| **Text Encoder** | ✅ Can be true | ❌ False (not recommended) |
+| **Prompt Style** | Flexible (10-100+ words) | Concise (1-3 sentences) |
 | **Epochs** | 10-12 | 8-10 |
 | **CFG** | 3.5-4.0 | 3.5 |
 | **Steps** | 28-30 | 28 |
@@ -478,6 +504,6 @@ train:
 
 ---
 
-**Version:** v0.3
+**Version:** v0.4
 **Lines:** ~150
 **Cross-references:** 02 (core), 02a (Qwen comparison)

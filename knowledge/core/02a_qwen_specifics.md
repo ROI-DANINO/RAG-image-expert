@@ -1,9 +1,9 @@
 # Qwen-Image Training Specifics
 
-**Version:** v0.3
+**Version:** v0.4
 **Model:** Qwen-Image-Edit-2509
 **Parameters:** Community-tested for character LoRA
-**Last Updated:** 2025-11-28
+**Last Updated:** 2025-12-04
 
 **Prerequisites:** Read `02_ostris_training_core.md` first
 
@@ -47,6 +47,21 @@ network:
 
 ## 2. Learning Rate
 
+### Failure Example: Learning Rate Too High
+
+Setting the learning rate too high (e.g., `0.0005` or more) can "fry" your LoRA. The model learns too quickly and aggressively, destroying details and resulting in noisy, chaotic, or heavily artifacted images. The loss will often spike erratically.
+
+**Symptom:**
+- Generated images look like abstract noise or have extreme color saturation.
+- The character's face is unrecognizable.
+
+**Fix:**
+- Immediately stop the training.
+- Lower the learning rate back to the recommended `0.0002` or even `0.0001` and restart.
+
+---
+
+
 ### Recommended: 0.0002 (2e-4)
 
 ```yaml
@@ -72,7 +87,7 @@ optimizer:
 **Adjustment rules:**
 - If underfit: +0.00005 increment
 - If overfit: -0.00005 decrement
-- Never exceed 0.0005 for characters
+- Exceeding 0.0005 for characters is not recommended as it significantly increases the risk of overfitting or "frying" the LoRA.
 
 ---
 
@@ -104,11 +119,24 @@ training:
 
 ## 4. Text Encoder Settings
 
+### When to Experiment: Training the Text Encoder
+
+While the strong recommendation is to keep `train_text_encoder: false`, advanced users might experiment with setting it to `true` under specific circumstances:
+
+- **Goal:** To achieve a very specific artistic style or to force the model to learn a new concept not present in its base training.
+- **Risk:** High risk of model instability, loss spikes, and catastrophic forgetting. The LoRA may become unusable.
+- **Requirement:** A very large and diverse dataset is needed to mitigate the risks.
+
+**This should only be attempted as a last resort by experienced users who are comfortable with failed training runs.**
+
+---
+
+
 ### Critical for Qwen
 
 ```yaml
 train:
-  train_text_encoder: false  # MUST be false for Qwen
+  train_text_encoder: false  # Recommended. Setting to 'true' is highly experimental and can cause instability.
 ```
 
 **Why false?**
@@ -168,7 +196,7 @@ model:
 
 ```yaml
 sample:
-  sampler: "flowmatch"    # Must match training
+  sampler: "flowmatch"    # Recommended to match training for best results. Other samplers can be used for creative effects.
   sample_steps: 28        # Standard for Qwen
   guidance_scale: 3.5     # Recommended range: 3.0-4.0
 ```
@@ -225,10 +253,10 @@ config:
         steps: 3400
         gradient_accumulation_steps: 4
         train_unet: true
-        train_text_encoder: false  # CRITICAL: Must be false
+        train_text_encoder: false  # Recommended. Setting to 'true' is highly experimental and can cause instability.
 
         gradient_checkpointing: true
-        noise_scheduler: "flowmatch"  # CRITICAL: Qwen-specific
+        noise_scheduler: "flowmatch"  # Qwen-specific. This is a strong requirement of the model architecture.
 
         optimizer: "adamw8bit"
         lr: 0.0002  # Community-tested optimal
@@ -241,7 +269,7 @@ config:
 
       model:
         name_or_path: "Qwen/Qwen-Image-Edit-2509"
-        is_qwen: true  # CRITICAL: Flag for Qwen handling
+        is_qwen: true  # This flag is essential for the training toolkit to use the correct model-specific logic.
         quantize: true
         quantize_dtype: "int8"
 
@@ -265,7 +293,7 @@ config:
 
 ### Prompt Structure
 
-**Optimal length:** 50-200 characters
+**Prompt Style:** Clear, descriptive prompts of **1-3 sentences** generally work best. While there is no strict character limit, conciseness is often effective.
 
 **Format:**
 ```
@@ -320,7 +348,7 @@ pip install -r requirements.txt
 ### Issue: Unstable Training (Loss Spikes)
 
 **Likely causes:**
-- `train_text_encoder: true` (MUST be false)
+- `train_text_encoder: true` (Not recommended, see section 4).
 - Learning rate too high
 - Batch size issues
 
@@ -335,7 +363,7 @@ lr: 0.0001  # Lower if still unstable
 ### Issue: Poor Sample Quality During Training
 
 **Causes:**
-- Wrong sampler (must be flowmatch)
+- Sampler mismatch (Flowmatch is strongly recommended for consistency).
 - Guidance scale too high/low
 
 **Fix:**
@@ -404,6 +432,6 @@ LoRA strength: 0.6, 0.8, 1.0
 
 ---
 
-**Version:** v0.3
+**Version:** v0.4
 **Lines:** ~150
 **Cross-references:** 02 (core), 02b (Flux comparison)

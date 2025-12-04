@@ -264,7 +264,7 @@ Simulate amateur photographer:
 | Model | Prompt Length | Style | Example |
 |-------|---------------|-------|---------|
 | **Flux.2** | 30-100 words | Natural language, conversational | "A casual mirror selfie. Woman in a bikini holding her iPhone. The mirror has fingerprints and the flash creates a bright starburst. Her bedroom is messy with clothes on the floor. Very casual pose, not trying too hard. Looks like a real Instagram post." |
-| **Nano Banana Pro** | <25 words | Concise keywords | "Mirror selfie, bikini, iPhone visible, dirty mirror, flash reflection, messy bedroom, casual pose, unedited." |
+| **Nano Banana Pro** | Flexible | Natural or concise | "Mirror selfie, bikini, iPhone visible, dirty mirror, flash reflection, messy bedroom, casual pose, unedited." |
 | **Higgsfield Soul ID** | 50-100 words | Focus on outfit/background | "grace_char mirror selfie wearing bikini, holding iPhone, fingerprints on mirror, harsh flash, cluttered bedroom background, casual hip-pop pose, authentic Instagram vibe" |
 | **Qwen Image Edit 2509** | 50-200 characters | Expressive, state what varies | "grace_char taking mirror selfie in bikini, holding iPhone with flash creating starburst on dirty mirror, messy bedroom with clothes pile, casual relaxed pose, unedited phone quality" |
 
