@@ -1,0 +1,429 @@
+====================================================================================================
+DETAILED STRICTNESS ANALYSIS - IDENTIFYING INFLEXIBLE STATEMENTS
+====================================================================================================
+
+
+====================================================================================================
+FILE: 01_photorealistic_prompting_v03.md
+Potentially inflexible statements: 10
+====================================================================================================
+
+[1] ONLY restrictions (Line 94)
+Concern: Exclusive restriction - might limit creativity
+
+Statement: - Only mention for motion blur/freeze effects
+
+Context:
+----------------------------------------------------------------------------------------------------
+
+**Shutter speed** (rarely needed in prompts):
+- Only mention for motion blur/freeze effects
+- Example: "1/1000 shutter speed, frozen motion"
+
+
+----------------------------------------------------------------------------------------------------
+
+[2] ALWAYS requirements (Line 114)
+Concern: No exceptions allowed - is this realistic?
+
+Statement: **Tier 1: Essential** (use always for realism)
+
+Context:
+----------------------------------------------------------------------------------------------------
+### 2.2 Skin Texture Keywords (Priority Order)
+
+**Tier 1: Essential** (use always for realism)
+```
+natural skin texture
+
+----------------------------------------------------------------------------------------------------
+
+[3] Rigid Prompt Length (Line 279)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: **Qwen-Image (50-200 characters ideal):**
+
+Context:
+----------------------------------------------------------------------------------------------------
+### 4.2 Prompt Length by Model
+
+**Qwen-Image (50-200 characters ideal):**
+```
+"photorealistic, woman at cafe, natural lighting,
+
+----------------------------------------------------------------------------------------------------
+
+[4] Rigid Prompt Length (Line 285)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: **Flux (30-100 words):**
+
+Context:
+----------------------------------------------------------------------------------------------------
+```
+
+**Flux (30-100 words):**
+```
+"A photorealistic portrait of a young woman sitting at an outdoor cafe.
+
+----------------------------------------------------------------------------------------------------
+
+[5] Rigid Prompt Length (Line 424)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: **Optimal length:** 50-200 characters
+
+Context:
+----------------------------------------------------------------------------------------------------
+
+**Strengths:** Natural language, concise prompts
+**Optimal length:** 50-200 characters
+
+**Structure:**
+
+----------------------------------------------------------------------------------------------------
+
+[6] Rigid Prompt Length (Line 447)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: **Optimal length:** 30-100 words
+
+Context:
+----------------------------------------------------------------------------------------------------
+
+**Strengths:** Natural language descriptions, understands context
+**Optimal length:** 30-100 words
+
+**Structure:** Full sentences, descriptive
+
+----------------------------------------------------------------------------------------------------
+
+[7] Rigid Prompt Length (Line 503)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: - Keep it SHORT (15-25 words max)
+
+Context:
+----------------------------------------------------------------------------------------------------
+
+**Key principles:**
+- Keep it SHORT (15-25 words max)
+- Focus on pose and outfit variation
+- Lighting keywords work well
+
+----------------------------------------------------------------------------------------------------
+
+[8] NEVER prohibitions (Line 560)
+Concern: Absolute prohibition - are there valid exceptions?
+
+Statement: **What to NEVER include:**
+
+Context:
+----------------------------------------------------------------------------------------------------
+- ✅ Mood/atmosphere ("candid", "relaxed", "confident")
+
+**What to NEVER include:**
+- ❌ Hair color/style (reference image handles this)
+- ❌ Eye color (reference image handles this)
+
+----------------------------------------------------------------------------------------------------
+
+[9] ALWAYS requirements (Line 692)
+Concern: No exceptions allowed - is this realistic?
+
+Statement: - Always include skin texture keywords
+
+Context:
+----------------------------------------------------------------------------------------------------
+- Keep prompts consistent across dataset
+- Focus on lighting/pose variation, not prompt variation
+- Always include skin texture keywords
+
+**For use with Soul ID** (see 06_higgsfield_integration.md):
+
+----------------------------------------------------------------------------------------------------
+
+[10] NEVER prohibitions (Line 697)
+Concern: Absolute prohibition - are there valid exceptions?
+
+Statement: - NEVER describe: hair, face, skin tone (reference handles this)
+
+Context:
+----------------------------------------------------------------------------------------------------
+- Reference image handles appearance
+- Prompt focuses on: pose, setting, lighting, camera
+- NEVER describe: hair, face, skin tone (reference handles this)
+
+**For Instagram-style** (see 07_instagram_authentic_v03.md):
+
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FILE: 02b_flux_specifics.md
+Potentially inflexible statements: 5
+====================================================================================================
+
+[1] ONLY restrictions (Line 36)
+Concern: Exclusive restriction - might limit creativity
+
+Statement: | 128 | Style LoRA only | Overfit risk for characters |
+
+Context:
+----------------------------------------------------------------------------------------------------
+| **32** | **Character LoRA** ⭐ | **Balanced** |
+| 64 | Complex/style LoRA | High detail |
+| 128 | Style LoRA only | Overfit risk for characters |
+
+---
+
+----------------------------------------------------------------------------------------------------
+
+[2] Absolute MUST statements (Line 160)
+Concern: Absolute requirement - check if exceptions exist
+
+Statement: sampler: "flowmatch"    # Must match training
+
+Context:
+----------------------------------------------------------------------------------------------------
+```yaml
+sample:
+  sampler: "flowmatch"    # Must match training
+  sample_steps: 28-30     # Slightly higher than Qwen
+  guidance_scale: 3.5-4.0 # Flux likes higher CFG
+
+----------------------------------------------------------------------------------------------------
+
+[3] Rigid Prompt Length (Line 256)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: **Optimal length:** 30-100 words (longer than Qwen)
+
+Context:
+----------------------------------------------------------------------------------------------------
+### Prompt Structure
+
+**Optimal length:** 30-100 words (longer than Qwen)
+
+**Format:** Full sentences, descriptive
+
+----------------------------------------------------------------------------------------------------
+
+[4] Absolute MUST statements (Line 325)
+Concern: Absolute requirement - check if exceptions exist
+
+Statement: | **Text Encoder** | Can be true | Must be false |
+
+Context:
+----------------------------------------------------------------------------------------------------
+| **Rank** | 32-64 | 16 |
+| **LR** | 0.0001 | 0.0002 |
+| **Text Encoder** | Can be true | Must be false |
+| **Prompt Style** | Natural language (30-100 words) | Concise (50-200 chars) |
+| **Epochs** | 10-12 | 8-10 |
+
+----------------------------------------------------------------------------------------------------
+
+[5] Rigid Prompt Length (Line 326)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: | **Prompt Style** | Natural language (30-100 words) | Concise (50-200 chars) |
+
+Context:
+----------------------------------------------------------------------------------------------------
+| **LR** | 0.0001 | 0.0002 |
+| **Text Encoder** | Can be true | Must be false |
+| **Prompt Style** | Natural language (30-100 words) | Concise (50-200 chars) |
+| **Epochs** | 10-12 | 8-10 |
+| **CFG** | 3.5-4.0 | 3.5 |
+
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FILE: 02a_qwen_specifics.md
+Potentially inflexible statements: 7
+====================================================================================================
+
+[1] NEVER prohibitions (Line 75)
+Concern: Absolute prohibition - are there valid exceptions?
+
+Statement: - Never exceed 0.0005 for characters
+
+Context:
+----------------------------------------------------------------------------------------------------
+- If underfit: +0.00005 increment
+- If overfit: -0.00005 decrement
+- Never exceed 0.0005 for characters
+
+---
+
+----------------------------------------------------------------------------------------------------
+
+[2] Absolute MUST statements (Line 111)
+Concern: Absolute requirement - check if exceptions exist
+
+Statement: train_text_encoder: false  # MUST be false for Qwen
+
+Context:
+----------------------------------------------------------------------------------------------------
+```yaml
+train:
+  train_text_encoder: false  # MUST be false for Qwen
+```
+
+
+----------------------------------------------------------------------------------------------------
+
+[3] Absolute MUST statements (Line 171)
+Concern: Absolute requirement - check if exceptions exist
+
+Statement: sampler: "flowmatch"    # Must match training
+
+Context:
+----------------------------------------------------------------------------------------------------
+```yaml
+sample:
+  sampler: "flowmatch"    # Must match training
+  sample_steps: 28        # Standard for Qwen
+  guidance_scale: 3.5     # Recommended range: 3.0-4.0
+
+----------------------------------------------------------------------------------------------------
+
+[4] Absolute MUST statements (Line 228)
+Concern: Absolute requirement - check if exceptions exist
+
+Statement: train_text_encoder: false  # CRITICAL: Must be false
+
+Context:
+----------------------------------------------------------------------------------------------------
+        gradient_accumulation_steps: 4
+        train_unet: true
+        train_text_encoder: false  # CRITICAL: Must be false
+
+        gradient_checkpointing: true
+
+----------------------------------------------------------------------------------------------------
+
+[5] Rigid Prompt Length (Line 268)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: **Optimal length:** 50-200 characters
+
+Context:
+----------------------------------------------------------------------------------------------------
+### Prompt Structure
+
+**Optimal length:** 50-200 characters
+
+**Format:**
+
+----------------------------------------------------------------------------------------------------
+
+[6] Absolute MUST statements (Line 323)
+Concern: Absolute requirement - check if exceptions exist
+
+Statement: - `train_text_encoder: true` (MUST be false)
+
+Context:
+----------------------------------------------------------------------------------------------------
+
+**Likely causes:**
+- `train_text_encoder: true` (MUST be false)
+- Learning rate too high
+- Batch size issues
+
+----------------------------------------------------------------------------------------------------
+
+[7] Absolute MUST statements (Line 344)
+Concern: Absolute requirement - check if exceptions exist
+
+Statement: sampler: "flowmatch"  # Must match training
+
+Context:
+----------------------------------------------------------------------------------------------------
+```yaml
+sample:
+  sampler: "flowmatch"  # Must match training
+  guidance_scale: 3.5   # Adjust 3.0-4.0
+  sample_steps: 28      # Standard
+
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+FILE: 08_model_specific_best_practices.md
+Potentially inflexible statements: 5
+====================================================================================================
+
+[1] Rigid Prompt Length (Line 18)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: | **Optimal Length** | <25 words | 40-60 words | 30-100 words | 50-200 characters |
+
+Context:
+----------------------------------------------------------------------------------------------------
+| Feature | Nano Banana Pro | Higgsfield Soul ID | Flux.2 | Qwen Image Edit 2509 |
+|---------|----------------|-------------------|--------|---------------------|
+| **Optimal Length** | <25 words | 40-60 words | 30-100 words | 50-200 characters |
+| **Best For** | Text rendering, concise queries | Character consistency | Complex scenes, photorealism | Multi-image editing |
+| **Prompt Style** | Structured, concise | Natural with trigger word | Detailed natural language | Expressive, specific |
+
+----------------------------------------------------------------------------------------------------
+
+[2] Rigid Prompt Length (Line 132)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: **30-100 words** (detailed, specific prompts work best)
+
+Context:
+----------------------------------------------------------------------------------------------------
+
+### Optimal Prompt Length
+**30-100 words** (detailed, specific prompts work best)
+
+### Understanding Dual Encoders
+
+----------------------------------------------------------------------------------------------------
+
+[3] Rigid Prompt Length (Line 180)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: **50-200 characters** (sweet spot: 80-150 characters)
+
+Context:
+----------------------------------------------------------------------------------------------------
+
+### Optimal Prompt Length
+**50-200 characters** (sweet spot: 80-150 characters)
+
+### Prompt Formula
+
+----------------------------------------------------------------------------------------------------
+
+[4] Rigid Prompt Length (Line 263)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: | **Minimum** | 20-30 words | Include essentials only |
+
+Context:
+----------------------------------------------------------------------------------------------------
+| Range | Word Count | Use Case |
+|-------|-----------|----------|
+| **Minimum** | 20-30 words | Include essentials only |
+| **Optimal** | 40-60 words | Detailed but not overwhelming |
+| **Maximum** | 100 words | Very detailed, complex scenes |
+
+----------------------------------------------------------------------------------------------------
+
+[5] Rigid Prompt Length (Line 264)
+Concern: May be too restrictive - users might need flexibility
+
+Statement: | **Optimal** | 40-60 words | Detailed but not overwhelming |
+
+Context:
+----------------------------------------------------------------------------------------------------
+|-------|-----------|----------|
+| **Minimum** | 20-30 words | Include essentials only |
+| **Optimal** | 40-60 words | Detailed but not overwhelming |
+| **Maximum** | 100 words | Very detailed, complex scenes |
+
+
+----------------------------------------------------------------------------------------------------
