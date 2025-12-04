@@ -4,6 +4,36 @@
 
 Retrieve-Augmented Generation (RAG) system specialized in photorealistic prompts, LoRA training, and Instagram authenticity. Works with any OpenAI-compatible LLM (Grok, OpenAI, Ollama, LM Studio, etc.).
 
+## Table of Contents
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [1. Install](#1-install)
+  - [2. Configure LLM](#2-configure-llm)
+  - [3. Start Chatting](#3-start-chatting)
+- [Usage](#usage)
+  - [CLI Chat Mode](#cli-chat-mode)
+  - [REST API Server & Web UI](#rest-api-server--web-ui)
+  - [API Endpoints](#api-endpoints)
+- [Supported LLMs](#supported-llms)
+- [Docker Quick Start](#docker-quick-start)
+- [Project Structure](#project-structure)
+- [Environment Variables](#environment-variables)
+- [How It Works](#how-it-works)
+- [Knowledge Base](#knowledge-base)
+- [Feedback & Learning System](#feedback--learning-system)
+  - [Providing Feedback](#providing-feedback)
+  - [What Gets Stored](#what-gets-stored)
+  - [Future Use (Roadmap)](#future-use-roadmap)
+  - [Session Management](#session-management-phase-1-complete)
+- [Troubleshooting](#troubleshooting)
+  - [Docker/Container Issues](#dockercontainer-issues)
+  - [LLM Integration Issues](#llm-integration-issues)
+- [License](#license)
+- [Contributing](#contributing)
+- [Next Steps for Testing](#next-steps-for-testing)
+
 ---
 
 ## Features
