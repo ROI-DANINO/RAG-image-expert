@@ -1,9 +1,9 @@
 # RAG Image Expert - Development Roadmap
 
-## Current Status: Phase 3 Complete (v0.6.0) ✅
+## Current Status: Phase 3.5 Complete (v0.7.0) ✅
 
 **Last Updated:** 2025-12-04
-**Version:** 0.6.0 "Image Generation Integration"
+**Version:** 0.7.0 "Knowledge Base Enhancement"
 
 ---
 
@@ -299,6 +299,96 @@ curl http://localhost:3000/services/status
 - `100cc80` - docs: Update ROADMAP - Phase 2 backend complete
 - `d6f6860` - fix: Generate message_id and sequence_number
 - `3d4e645` - feat: Phase 2 - Server integration with SessionDB
+
+---
+
+## Phase 3.5: Knowledge Base Enhancement (COMPLETED) ✅
+
+**Goal:** Expand and correct knowledge base with Fal.ai integration, content safety, and creator business strategies
+
+### Features Implemented ✅
+
+**Critical Corrections:**
+- ✅ **Nano Banana Pro Fix** - Removed incorrect 25-word prompt limit (v0.3→v0.4)
+  - Old guidance: "Under 25 words (30% higher accuracy)"
+  - New guidance: "Flexible. Short prompts work, but detailed prompts encouraged"
+  - Source: Official Google blog confirms NO strict word limit
+  - Impact: Prevents unnecessary user constraints
+
+- ✅ **Language Flexibility** - Softened absolute terms across all guides
+  - MUST → recommended
+  - NEVER → not recommended
+  - Added "When to Break the Rules" sections
+  - More nuanced, experimental-friendly guidance
+
+**New Technical Knowledge (3 files):**
+- ✅ `09_fal_ai_integration.md` - Comprehensive Fal.ai service guide
+- ✅ `03b_flux_fal_quick_ref.md` - Quick reference for Flux on Fal.ai
+- ✅ `10_content_safety_guidelines.md` - SFW/NSFW generation guidelines
+
+**New Business Knowledge (6 files):**
+- ✅ `11_fanvue_startup_guide.md` - Complete startup guide for FanVue creators
+- ✅ `12_fanvue_content_schedule.md` - Week 1 content schedule
+- ✅ `13_fanvue_pricing_strategy.md` - Subscription and PPV pricing
+- ✅ `14_onlyfans_content_strategy.md` - Platform-specific strategies
+- ✅ `15_boudoir_pose_research.md` - AI prompting for poses
+- ✅ `16_adult_content_creation.md` - Best practices and research
+
+**Updated Core Files (6 files):**
+- ✅ `01_photorealistic_prompting_v03.md` → v0.4
+- ✅ `02a_qwen_specifics.md` → v0.4
+- ✅ `02b_flux_specifics.md` → v0.4
+- ✅ `04_troubleshooting_v03.md` → v0.4 (added API troubleshooting)
+- ✅ `07_instagram_authentic_v03.md` → updated
+- ✅ `08_model_specific_best_practices.md` → v4.0
+
+**Research Documentation:**
+- ✅ Moved 11 research files to `/docs/research/`
+- ✅ Official findings (Flux, Qwen, Nano Banana Pro)
+- ✅ Analysis summaries and planning documents
+- ✅ Strictness analysis and imperfection research
+
+**RAG System Updates:**
+- ✅ Updated `rag/simple-rag.js` to index both `knowledge/core/` and `knowledge/business/`
+- ✅ Rebuilt embeddings cache
+- ✅ **Impact:** 125→729 chunks (+483% coverage)
+- ✅ **Files:** 9→18 knowledge files (+100%)
+
+**Documentation Updates:**
+- ✅ Updated README.md with new knowledge base structure
+- ✅ Updated USER_GUIDE.md with content categories and example queries
+- ✅ Updated ROADMAP.md (this file)
+
+### Knowledge Base Structure
+
+```
+knowledge/
+├── core/                    # Technical (12 files)
+│   ├── 01_photorealistic_prompting_v03.md (v0.4)
+│   ├── 02_ostris_training_core.md
+│   ├── 02a_qwen_specifics.md (v0.4)
+│   ├── 02b_flux_specifics.md (v0.4)
+│   ├── 03_qwen_quick_reference.md
+│   ├── 03b_flux_fal_quick_ref.md (NEW)
+│   ├── 04_troubleshooting_v03.md (v0.4)
+│   ├── 06_higgsfield_integration_v03.md
+│   ├── 07_instagram_authentic_v03.md
+│   ├── 08_model_specific_best_practices.md (v4.0)
+│   ├── 09_fal_ai_integration.md (NEW)
+│   └── 10_content_safety_guidelines.md (NEW)
+│
+└── business/                # Creator Economy (6 files)
+    ├── 11_fanvue_startup_guide.md (NEW)
+    ├── 12_fanvue_content_schedule.md (NEW)
+    ├── 13_fanvue_pricing_strategy.md (NEW)
+    ├── 14_onlyfans_content_strategy.md (NEW)
+    ├── 15_boudoir_pose_research.md (NEW)
+    └── 16_adult_content_creation.md (NEW)
+```
+
+### Git Commits
+- Will be committed on `data-enhancement` branch
+- Separate from feature code for clear git history
 
 ---
 

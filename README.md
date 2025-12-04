@@ -281,14 +281,25 @@ RAG-image-expert/
 
 ## Knowledge Base
 
-The system includes pre-indexed knowledge on:
-- Photorealistic prompt engineering
-- LoRA training (Ostris, Qwen, Flux models)
-- Instagram authenticity framework
-- POV selection and camera techniques
-- Imperfection layers for realism
+The system includes comprehensive, pre-indexed knowledge across **18 files** organized in two categories:
 
-Add your own knowledge by placing `.md` files in `knowledge/` and rebuilding the index:
+### Technical Knowledge (`knowledge/core/`)
+- **Photorealistic Prompting:** Camera settings, lighting, lens selection, skin texture (v0.4)
+- **LoRA Training:** Ostris core principles, Qwen specifics, Flux specifics
+- **Model Integration:** Fal.ai service guide, Flux/Fal quick reference, Higgsfield workflows
+- **Instagram Authenticity:** POV framework, imperfection layers, realistic composition
+- **Troubleshooting:** Model-specific issues, API service debugging
+- **Content Safety:** SFW/NSFW generation guidelines, artistic framing strategies
+
+### Business Knowledge (`knowledge/business/`)
+- **FanVue/OnlyFans Strategies:** Complete startup guides, content schedules, pricing menus
+- **Creator Economy:** PPV monetization, subscription tiers, content planning
+- **Boudoir & Poses:** AI prompting for poses, composition techniques
+- **Adult Content Creation:** Platform-specific best practices and research
+
+**Total Coverage:** 729 indexed chunks from 19 files for precise RAG retrieval
+
+Add your own knowledge by placing `.md` files in `knowledge/core/` or `knowledge/business/` and rebuilding the index:
 ```bash
 npm run build-index
 # Or run directly:

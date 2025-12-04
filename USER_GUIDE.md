@@ -8,11 +8,12 @@
 ## What Is This?
 
 A **RAG-powered AI assistant** for image generation workflows with:
-- 🔍 **Smart search** across 10 knowledge files (5,983 lines)
-- 🎨 **Image generation** via Replicate API (Flux models)
+- 🔍 **Smart search** across 18 knowledge files (729 indexed chunks)
+- 🎨 **Image generation** via Fal.ai/Replicate API (Flux models)
 - 🧠 **Memory system** that remembers successful prompts
 - 💬 **Persistent sessions** with SQLite storage
 - ⚡ **Token-optimized** (52% reduction)
+- 💼 **Business strategies** for FanVue/OnlyFans creators
 
 ---
 
@@ -83,10 +84,42 @@ curl -X POST http://localhost:3000/conversation \
 ```
 
 **What happens:**
-1. RAG searches 10 knowledge files
+1. RAG searches 18 knowledge files (technical + business)
 2. Grok enhances response with retrieved context
 3. Memory Bank recalls past successful patterns
 4. Response saved to session database
+
+### Content Categories
+
+The knowledge base is organized into two main areas:
+
+**Technical (`knowledge/core/`):**
+- Photorealistic prompting (v0.4 - corrected Nano Banana Pro guidance)
+- LoRA training (Qwen, Flux, Ostris)
+- Fal.ai integration and quick references
+- Instagram authenticity framework
+- Content safety guidelines (SFW/NSFW)
+- Troubleshooting
+
+**Business (`knowledge/business/`):**
+- FanVue/OnlyFans creator startup guides
+- PPV pricing strategies and subscription tiers
+- Content schedules and monetization
+- Boudoir pose research for AI prompting
+- Adult content platform best practices
+
+**Example Queries:**
+```bash
+# Technical queries
+"What's the optimal prompt length for Nano Banana Pro?"
+"How do I use Flux models on Fal.ai?"
+"What are content safety best practices for NSFW generation?"
+
+# Business queries
+"How should I price PPV content on FanVue?"
+"What's a good content schedule for Week 1 on adult platforms?"
+"What are effective boudoir poses for AI images?"
+```
 
 ---
 
