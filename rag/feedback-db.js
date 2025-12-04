@@ -75,9 +75,9 @@ class FeedbackDB {
    */
   saveFeedback(data) {
     const {
-      feedbackId,
+      feedbackId = `fb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       sessionId,
-      timestamp,
+      timestamp = new Date().toISOString(),
       thumbs,
       rating,
       notes,
