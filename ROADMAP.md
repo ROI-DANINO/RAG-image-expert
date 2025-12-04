@@ -148,10 +148,14 @@ All tests passed!
 
 ## Phase 2: Server Integration with Token Optimization (NEXT)
 
-**Goal:** Integrate SessionDB into rag-server.js with feature flag for safe rollout
+**Goal:** Integrate SessionDB into rag-server.js with UI toggle for easy enable/disable
 
 ### Tasks (Planned)
 - [ ] Add `USE_DB_SESSIONS=false` feature flag to .env
+- [ ] **UI Toggle**: Add settings panel in web UI to enable/disable session persistence
+  - Toggle switch visible in UI (e.g., Settings icon → "Enable Session Persistence")
+  - Saves preference to localStorage or server config
+  - Visual indicator when sessions are being saved
 - [ ] Modify `/chat` endpoint to optionally use SessionDB
 - [ ] Implement getRecentMessages(6) for token optimization
 - [ ] Update feedback endpoint to save query_text, response_text, rag_context
@@ -160,15 +164,19 @@ All tests passed!
   - `GET /sessions/:id` - Get session with messages
   - `DELETE /sessions/:id` - Soft delete session
   - `GET /sessions/:id/stats` - Session analytics
-- [ ] Test with feature flag disabled (verify no breaking changes)
-- [ ] Test with feature flag enabled (verify token reduction)
+- [ ] Test with toggle disabled (verify no breaking changes)
+- [ ] Test with toggle enabled (verify token reduction)
 - [ ] Measure actual token usage (target: 1800 vs 3750)
 
 ### Success Criteria
-- Feature flag OFF → System works exactly as before
-- Feature flag ON → 50%+ token reduction confirmed
+- Toggle OFF → System works exactly as before
+- Toggle ON → 50%+ token reduction confirmed
 - No breaking changes to existing functionality
 - Feedback properly linked to messages
+- User can easily see and control session persistence state
+
+### UI Integration Note
+**User requirement:** Feature flag must be accessible in UI, not buried in .env file. Users won't remember to check .env flags during regular use. Settings panel or visible toggle required.
 
 ---
 
