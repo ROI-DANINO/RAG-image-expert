@@ -1,571 +1,367 @@
-# v0.5.1 User Guide - AI Image Generation Knowledge Base
+# RAG Image Expert - Quick User Guide
 
-> Quick start guide for using the v0.5.1 RAG-powered knowledge system
-
-**Version:** 0.5.1 "Session Management & Learning"
-**Status:** Production-ready
-**Last Updated:** 2025-12-04
+**Version:** 0.6.0 "Image Generation Integration"
+**Status:** Production-ready with MCP services
 
 ---
 
 ## What Is This?
 
-A **RAG (Retrieval-Augmented Generation) knowledge system** for AI image generation workflows with **persistent sessions** and **learning capabilities**. Think of it as a smart assistant that:
-
-- ✅ **Finds answers instantly** from 10 knowledge files (5,983 lines of docs)
-- ✅ **Understands context** using semantic search (not just keywords)
-- ✅ **Remembers conversations** with SQLite session persistence
-- ✅ **Learns from feedback** with thumbs, ratings, and image uploads
-- ✅ **Optimized for tokens** - concise but high-quality responses
-- ✅ **Works offline** - no API keys required (except for LLM API)
-- ✅ **Blazing fast** - 7ms average query time
+A **RAG-powered AI assistant** for image generation workflows with:
+- 🔍 **Smart search** across 10 knowledge files (5,983 lines)
+- 🎨 **Image generation** via Replicate API (Flux models)
+- 🧠 **Memory system** that remembers successful prompts
+- 💬 **Persistent sessions** with SQLite storage
+- ⚡ **Token-optimized** (52% reduction)
 
 ---
 
 ## Quick Start
 
-### Option 1: Web Interface (Recommended)
+### 1. Install & Configure
 
-Start the server and use the web UI:
+```bash
+# Install dependencies
+npm install
+
+# Copy and configure environment
+cp .env.example .env
+nano .env  # Add your API keys
+```
+
+### 2. API Keys Needed
+
+| API | Required? | Purpose | Get it from |
+|-----|-----------|---------|-------------|
+| **Grok (xAI)** | ✅ **YES** | Chat, prompt enhancement, RAG responses | [console.x.ai](https://console.x.ai) |
+| **Fal.ai** | ⚠️ Optional | Image generation (Flux, SDXL) - **RECOMMENDED** | [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) |
+| **Replicate** | ⚠️ Optional | Image generation (alternative to Fal) | [replicate.com/account/api-tokens](https://replicate.com/account/api-tokens) |
+
+**Minimum config (.env):**
+```env
+XAI_API_KEY=your-grok-api-key        # Required for all features
+```
+
+**Full config (with image generation):**
+```env
+XAI_API_KEY=your-grok-api-key        # Required
+FAL_API_KEY=your-fal-key             # Recommended - faster & cheaper
+# OR
+REPLICATE_API_TOKEN=your-token       # Alternative image provider
+USE_DB_SESSIONS=true                 # Optional - session persistence
+```
+
+**Cost comparison:**
+- **Grok API:** ~$5/million tokens (pay-as-you-go)
+- **Fal.ai:** ~$0.003/image (Flux Schnell), ~$0.04/image (Flux Pro) | **2-5s generation**
+- **Replicate:** ~$0.003/image (Flux Schnell), ~$0.055/image (Flux Pro) | 3-6s generation
+
+💡 **Tip:** Fal.ai is faster and cheaper for Flux models. The system auto-detects which provider you configured.
+
+### 3. Start the Server
 
 ```bash
 npm start
-# Open browser to http://localhost:3000
-```
-
-**Features:**
-- **Chat interface** with message history
-- **Image support** - paste (Ctrl+V) or upload images
-- **Multiline input** - Shift+Enter for new lines
-- **Feedback system** - 👍/👎, 1-7 stars, notes
-- **Markdown rendering** - formatted responses
-- **Session persistence** - conversations saved to database
-
-### Option 2: CLI Mode
-
-Use the command-line interface:
-
-```bash
-cd rag
-node rag-chat.js
-```
-
-**Commands:**
-- Type your question and press Enter
-- Type `exit` or `quit` to end session
-
-### Option 3: Direct Search
-
-Search the knowledge base directly:
-
-```bash
-cd rag
-node simple-rag.js search "your question here"
-```
-
-**Example:**
-```bash
-node simple-rag.js search "How do I make skin look realistic for Instagram?"
+# Open http://localhost:3000
 ```
 
 ---
 
-## How It Works
+## Core Features
 
-### The Search Flow
+### Chat with RAG Context
 
+**Web UI:** Type questions in the chat interface
+**API:**
+```bash
+curl -X POST http://localhost:3000/conversation \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionId": "session-123",
+    "message": "How do I make realistic skin for Instagram?"
+  }'
 ```
-Your Query
-    ↓
-[Embedding Model] ← Converts text to numbers (384 dimensions)
-    ↓
-[Semantic Search] ← Finds similar chunks via cosine similarity
-    ↓
-[Top 3 Results] ← Returns most relevant content
-```
-
-**Why semantic search?**
-- Understands meaning, not just exact words
-- "realistic skin" matches "natural texture" and "pore detail"
-- Finds related concepts even if phrasing differs
-
-### The Knowledge Base
-
-**10 Files Indexed:**
-1. `01_photorealistic_prompting_v03.md` - Detailed prompting techniques
-2. `02_ostris_training_core.md` - Core LoRA training guide
-3. `02a_qwen_specifics.md` - Qwen model parameters
-4. `02b_flux_specifics.md` - Flux model parameters
-5. `03_qwen_quick_reference.md` - Quick lookup tables
-6. `04_troubleshooting_v03.md` - Problem diagnosis trees
-7. `06_higgsfield_integration_v03.md` - Higgsfield workflow
-8. `07_instagram_authentic_v03.md` - **POV framework** (CRITICAL)
-9. `08_model_specific_best_practices.md` - Model comparison
-10. `agent/agent.md` - Agent logic patterns (5 critical patterns including response format standards)
-
-**Total:** 542 chunks, 5.9MB embeddings cache
-
----
-
-## New in v0.5.1: Session Management & Feedback
-
-### Session Persistence (Phase 1 - Database Foundation)
-
-**What's been added:**
-- **SQLite database** (`rag/sessions.db`) stores all conversations
-- **Message history** preserved across sessions
-- **Feedback tracking** linked to specific messages
-- **Token-optimized storage** - IDs instead of full text
-
-**Database tables:**
-1. **sessions** - Conversation metadata (title, summary, rating, status)
-2. **messages** - Individual messages with role, content, images, RAG context
-3. **branches** - Conversation divergence tracking (future feature)
-4. **feedback** - Extended with message_id, branch_id, query/response text
-
-**How it works:**
-```javascript
-// When you chat:
-1. Message saved to database with unique ID
-2. RAG context stored as chunk IDs (not full text)
-3. Last 6 messages sent to LLM (token optimization)
-4. Full history available for UI display
-
-// Token efficiency:
-- Standard context: ~3750 tokens per request
-- Optimized context: ~1800 tokens per request
-- Savings: 52% reduction
-```
-
-### Providing Feedback
-
-**Quick feedback:**
-- Click **👍** for good responses
-- Click **👎** for poor responses
-
-**Detailed feedback:**
-1. Click **"Add details"** button
-2. Rate **1-7 stars** (1 = poor, 7 = excellent)
-3. Add **notes** explaining what should be fixed
-4. Upload **result image** showing the actual issue
-5. Click **"Submit Feedback"**
 
 **What happens:**
-- Rating **5+ stars** → Auto-prompt to generate session summary
-- All feedback stored in `rag/feedback.db`
-- Images saved to `rag/feedback_images/`
-- Feedback linked to specific messages for future learning
-
-### Image Support
-
-**Paste images:**
-1. Copy image to clipboard
-2. Press **Ctrl+V** in chat input
-3. Image appears in preview area
-4. Send message with attached images
-
-**Upload images:**
-1. Click **📎** (paperclip) button
-2. Select image files
-3. Images appear in preview area
-4. Send message with attached images
-
-**Supported formats:** JPG, PNG, GIF, WebP
-**Size limit:** 50MB total per message
+1. RAG searches 10 knowledge files
+2. Grok enhances response with retrieved context
+3. Memory Bank recalls past successful patterns
+4. Response saved to session database
 
 ---
 
-## Common Use Cases
+### Generate Images with AI-Enhanced Prompts
 
-### 1. Finding Prompting Advice
-
-**Query:** `"bedroom mirror selfie prompt"`
-
-**Returns:**
-- POV framework (selfie vs third-person)
-- Specific prompt templates
-- Camera positioning details
-
-**Why this works:** Semantic search finds "mirror selfie" concepts across multiple files.
-
----
-
-### 2. Troubleshooting Training Issues
-
-**Query:** `"my LoRA has plastic skin"`
-
-**Returns:**
-- Troubleshooting decision tree
-- Dataset composition fixes
-- Checkpoint selection advice
-
-**Why this works:** Chunks preserve decision tree structure, returning complete diagnostic flows.
-
----
-
-### 3. Model Comparison
-
-**Query:** `"Flux vs Qwen for Instagram"`
-
-**Returns:**
-- Model comparison tables
-- Use case recommendations
-- Parameter differences
-
-**Why this works:** Table preservation keeps comparison data intact.
-
----
-
-## Understanding Results
-
-### Relevance Scores Explained
-
-```
-Score: 0.654  ← This is cosine similarity (0-1 scale)
+**API:**
+```bash
+curl -X POST http://localhost:3000/generate-image \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "cyberpunk cat with neon fur",
+    "model": "flux-schnell"
+  }'
 ```
 
-**Score Guide:**
-- **0.7-1.0** = Excellent match (very relevant)
-- **0.6-0.7** = Good match (relevant)
-- **0.5-0.6** = Moderate match (somewhat relevant)
-- **<0.5** = Weak match (may not be useful)
+**Response:**
+```json
+{
+  "success": true,
+  "originalPrompt": "cyberpunk cat with neon fur",
+  "enhancedPrompt": "highly detailed cyberpunk cat, glowing neon fur in pink and blue tones, futuristic city background, volumetric lighting, 8k uhd, sharp focus",
+  "images": ["https://replicate.delivery/..."],
+  "metadata": {
+    "model": "flux-schnell",
+    "duration": 3.2,
+    "timestamp": "2025-12-04T04:23:00.000Z"
+  }
+}
+```
 
-**Why scores matter:** Higher scores = more relevant content. Top 3 results are sorted by score.
+**Available models:**
+- `flux-schnell` (fast, 4 steps)
+- `flux-dev` (quality, 28 steps)
+- `flux-pro` (photorealistic)
+- `sdxl` (classic Stable Diffusion)
 
 ---
 
-### Line Numbers
-
-```
-Lines: 141-158  ← Where to find this content in the source file
-```
-
-**Why useful:**
-- Jump directly to source
-- Verify context
-- Read surrounding content
-
----
-
-## Advanced Usage
-
-### Rebuild Embeddings (When Docs Change)
-
-If you edit knowledge files, rebuild the index:
+### Train Custom LoRA Models
 
 ```bash
-cd /home/roking/work_station/claude-v0.3/rag
-node simple-rag.js build-index
+curl -X POST http://localhost:3000/train-lora \
+  -H "Content-Type: application/json" \
+  -d '{
+    "trigger_word": "TOK",
+    "images_zip_url": "https://example.com/dataset.zip",
+    "steps": 1000,
+    "learning_rate": 0.0004
+  }'
 ```
 
-**What this does:**
-1. Reads all 10 files
-2. Chunks into 500-character pieces (with table preservation)
-3. Generates embeddings using Xenova/all-MiniLM-L6-v2
-4. Saves to `embeddings/core/embeddings-cache.json`
-
-**Time:** ~2-3 minutes
-**Why needed:** Embeddings are pre-computed for speed. Changes require rebuild.
-
----
-
-### Understanding Chunking
-
-**Chunk Size:** 500 characters
-**Overlap:** 100 characters
-**Special handling:** Tables and code blocks kept intact
-
-**Example:**
-```
-[Chunk 1: Lines 1-20]
-[Chunk 2: Lines 18-40]  ← 2-line overlap for context
-[Chunk 3: Lines 38-60]
+**Response:**
+```json
+{
+  "success": true,
+  "training_id": "abc123...",
+  "status": "starting",
+  "trigger_word": "TOK"
+}
 ```
 
-**Why overlap?** Ensures no information lost at chunk boundaries.
-
-**Why preserve tables?** Tables are semantic units - splitting them breaks meaning.
-
 ---
 
-## The "Why" Behind Key Decisions
+### Memory System
 
-### Why 542 Chunks Instead of 127 Projected?
-
-**Reason:** Fine-grained chunking improves precision.
-
-**Trade-off:**
-- ✅ More precise retrieval (smaller chunks = better matches)
-- ❌ Larger cache size (5.9MB vs 2.1MB projected)
-- ✅ Still extremely fast (7ms query time)
-
-**Decision:** Accept larger cache for better search quality.
-
----
-
-### Why Xenova/all-MiniLM-L6-v2 Model?
-
-**Reasons:**
-1. **Offline** - Runs locally, no API keys
-2. **Fast** - Small model (384 dimensions)
-3. **Accurate** - Good balance of speed vs quality
-4. **Battle-tested** - Widely used for semantic search
-
-**Alternatives considered:**
-- Larger models (768+ dims) = slower, minimal quality gain
-- OpenAI embeddings = requires API, costs money, slower
-
----
-
-### Why Split Embeddings (core vs experimental)?
-
-**Structure:**
-```
-rag/embeddings/
-├── core/              ← Production knowledge (rebuilt rarely)
-└── experimental/      ← Test docs (rebuilt frequently)
+**Save preferences:**
+```bash
+curl -X POST http://localhost:3000/memory/preference \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key": "favorite_style",
+    "value": "cyberpunk neon aesthetic"
+  }'
 ```
 
-**Why?**
-- Avoid rebuilding 542 core chunks when testing new docs
-- Faster iteration on experimental content
-- Clear separation of stable vs draft knowledge
+**Check memory stats:**
+```bash
+curl http://localhost:3000/memory/stats
 
-**Usage:** Currently only core is active. Add files to `experimental/` for testing.
-
----
-
-## Performance Explained
-
-### Query Time: 7ms (vs 400ms target)
-
-**Why so fast?**
-1. **Pre-computed embeddings** - No model inference during search
-2. **In-memory vectors** - No disk I/O
-3. **Local computation** - No network calls
-4. **Efficient cosine similarity** - Simple dot product math
-
-**Comparison:**
-- v0.3: 7ms (local)
-- Cloud API: 200-500ms (network latency + processing)
-- Database lookup: 50-100ms (disk I/O)
+# Response:
+{
+  "enabled": true,
+  "totalMemories": 15,
+  "lastUpdated": "2025-12-04T04:23:00.000Z"
+}
+```
 
 ---
 
-### Primary File Accuracy: 65.8% (vs 80% target)
+## API Endpoints
 
-**What this means:**
-- 65.8% of queries returned expected primary files in top 3
-- 34.2% returned relevant content from unexpected files
+### Image Generation
+- `POST /generate-image` - Generate image with RAG-enhanced prompt
+- `GET /generate-image/models` - List available models
+- `POST /train-lora` - Train custom LoRA model
 
-**Why below target?**
-1. **Cross-references working** - System finds related content in linked files
-2. **Semantic search flexibility** - Finds answers even if not in "expected" location
-3. **Conservative expectations** - Test matrix was overly specific
+### Chat & Search
+- `POST /conversation` - Stateful chat with memory
+- `POST /chat` - Stateless chat
+- `POST /search` - Direct RAG search
 
-**Is this bad?** No - users care about relevant answers, not which file it came from.
+### Memory
+- `GET /memory/stats` - Memory statistics
+- `POST /memory/preference` - Save preference
+
+### Sessions
+- `GET /sessions` - List all sessions
+- `GET /sessions/:id` - Get session with messages
+- `DELETE /sessions/:id` - Delete session
+- `GET /sessions/:id/stats` - Session analytics
+
+### System
+- `GET /services/status` - Check all service statuses
+- `GET /health` - Server health check
+
+---
+
+## Examples
+
+### Example 1: Generate Instagram-Style Portrait
+
+```javascript
+// 1. Ask RAG for best practices
+const searchRes = await fetch('http://localhost:3000/search', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    query: 'Instagram mirror selfie best practices'
+  })
+});
+
+// 2. Generate image with enhanced prompt
+const imageRes = await fetch('http://localhost:3000/generate-image', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    prompt: 'bedroom mirror selfie, iPhone 14 Pro, natural lighting',
+    model: 'flux-dev',
+    width: 1024,
+    height: 1344  // 9:16 Instagram aspect
+  })
+});
+
+const result = await imageRes.json();
+console.log('Image URL:', result.images[0]);
+console.log('Enhanced prompt:', result.enhancedPrompt);
+```
+
+---
+
+### Example 2: Build a Prompt Library
+
+```javascript
+// Generate variations and save successful ones
+const prompts = [
+  'cyberpunk street at night',
+  'fantasy forest with magic',
+  'minimalist product shot'
+];
+
+for (const prompt of prompts) {
+  const res = await fetch('http://localhost:3000/generate-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, model: 'flux-schnell' })
+  });
+
+  const result = await res.json();
+
+  // Memory Bank automatically saves successful generations
+  console.log(`Generated: ${result.images[0]}`);
+}
+
+// Check what was learned
+const stats = await fetch('http://localhost:3000/memory/stats');
+console.log(await stats.json());
+```
+
+---
+
+## Service Architecture
+
+```
+User Query
+    ↓
+[Memory Bank MCP] ← Recall past successful prompts
+    ↓
+[RAG System] ← Search 10 knowledge files (7ms)
+    ↓
+[Grok API] ← Enhance prompt with context
+    ↓
+[Replicate API] ← Generate image (Flux models)
+    ↓
+[SessionDB] ← Store result + metadata
+```
 
 ---
 
 ## Troubleshooting
 
-### "Cache file not found" Error
+### Image Generation Disabled
+**Error:** `"Image generation unavailable"`
+**Fix:** Add `REPLICATE_API_TOKEN` to `.env`
 
-**Problem:** Embeddings not built yet
-**Solution:** Run `node simple-rag.js build-index`
-
----
-
-### "Module not found" Error
-
-**Problem:** Dependencies not installed
-**Solution:** Run `npm install` in `rag/` directory
-
----
-
-### Poor Search Results
-
-**Problem:** Query too vague or embeddings out of date
-**Solutions:**
-1. Make query more specific: "realistic skin" → "skin texture for Instagram selfies"
-2. Rebuild embeddings if docs changed recently
-3. Try related terms: "LoRA training" → "character LoRA parameters"
-
----
+### Memory Not Working
+**Check status:**
+```bash
+curl http://localhost:3000/services/status
+```
+**Expected:** `"memory": { "enabled": true }`
+**If false:** Memory Bank MCP failed to start (check logs)
 
 ### Slow First Query
+**Expected:** First query ~30-60s (model loads), then 5-10ms
+**Why:** Embedding model downloads once, then cached
 
-**Problem:** Model loads on first run
-**Expected:** First query ~30-60 seconds, subsequent queries 5-10ms
-**Why:** Xenova model downloads and initializes once, then cached
-
----
-
-## File Reference Map
-
-**Need prompting help?**
-→ `01_photorealistic_prompting_v03.md`
-
-**Need training parameters?**
-→ `02_ostris_training_core.md`, `02a_qwen_specifics.md`, `02b_flux_specifics.md`
-
-**Need quick lookup?**
-→ `03_qwen_quick_reference.md`
-
-**Have a training problem?**
-→ `04_troubleshooting_v03.md`
-
-**Using Higgsfield?**
-→ `06_higgsfield_integration_v03.md`
-
-**Making Instagram-style images?**
-→ `07_instagram_authentic_v03.md` (POV framework)
-
-**Comparing models?**
-→ `08_model_specific_best_practices.md`
-
-**Understanding agent patterns?**
-→ `agent/agent.md`
+### Poor Image Results
+**Solutions:**
+1. Use more specific prompts
+2. Try different models (`flux-dev` > `flux-schnell` quality)
+3. Check RAG context with `/search` endpoint first
 
 ---
 
-## Testing the System
+## Configuration Reference
 
-### Run Test Suite
+### .env Variables
 
-```bash
-cd /home/roking/work_station/claude-v0.3/rag
-node test-queries.js
+```env
+# LLM (Required)
+XAI_API_KEY=your-key
+AI_MODEL=grok-4-1-fast-reasoning
+AI_BASE_URL=https://api.x.ai/v1
+
+# Image Generation (Optional)
+REPLICATE_API_TOKEN=your-token
+
+# Features (Optional)
+USE_DB_SESSIONS=true    # Enable session persistence
+PORT=3000               # Server port
 ```
 
-**What it does:**
-- Runs 20 baseline queries
-- Measures query time, relevance, accuracy
-- Logs results to `SYSTEM/efficiency-metrics.json`
+### Models Available
 
-**Expected output:**
-```
-=== Performance Summary ===
-Total queries: 20
-Average query time: 7ms (target: <400ms)
-Average relevance: 0.616 (target: >0.880)
-Primary file accuracy: 65.8% (target: >80%)
-```
+**Chat/Enhancement:**
+- `grok-4-1-fast-reasoning` (default)
+- `grok-4-1-thinking` (complex queries)
+
+**Image Generation:**
+- `flux-schnell` - 4 steps, ~3s, good quality
+- `flux-dev` - 28 steps, ~10s, high quality
+- `flux-pro` - 50 steps, ~20s, photorealistic
+- `sdxl` - Classic Stable Diffusion
 
 ---
 
-## System Architecture
+## Performance Metrics
 
-```
-Knowledge Base (10 files, 5,983 lines)
-          ↓
-    [Chunking] → 542 chunks (500 chars each, 100 overlap)
-          ↓
-    [Embedding Model] → Xenova/all-MiniLM-L6-v2 (384 dims)
-          ↓
-    [Cache] → embeddings/core/embeddings-cache.json (5.9MB)
-          ↓
-    [Search] → Cosine similarity (in-memory)
-          ↓
-    [Results] → Top 3 chunks with scores
-```
-
----
-
-## Configuration File
-
-**Location:** `rag/config.json`
-
-```json
-{
-  "model": "Xenova/all-MiniLM-L6-v2",
-  "chunkSize": 500,
-  "chunkOverlap": 100,
-  "topK": 3,
-  "knowledgeDir": "../knowledge/core",
-  "agentFile": "../agent/agent.md",
-  "cacheFile": "./embeddings/core/embeddings-cache.json",
-  "preserveTables": true,
-  "preserveCodeBlocks": true
-}
-```
-
-**Tuneable parameters:**
-- `chunkSize`: 400-600 (smaller = more precise, more chunks)
-- `chunkOverlap`: 50-150 (more = better context, more chunks)
-- `topK`: 2-5 (how many results to return)
-
-**Why these defaults?**
-- 500 chunk size: Good balance for table-heavy docs
-- 100 overlap: Ensures context preservation
-- topK=3: Enough variety without overwhelming user
-
----
-
-## Migration History
-
-**v0.1 (claude-ai-image-helper)**
-- 6 files, ~2,200 lines
-- Basic RAG system
-- Efficient but limited scope
-
-**v0.2 (comprehensive expansion)**
-- 8 files, 4,168 lines
-- Added Instagram guide (07), model comparison (08)
-- More comprehensive but needed optimization
-
-**v0.3 (unified testbed)**
-- 9 knowledge + 1 agent file, 5,983 lines
-- Split training guide (02/02a/02b)
-- POV framework emphasis
-- Table-heavy format
-- Production-ready RAG system
-
-**v0.5.0 (vision & feedback)**
-- Added image upload/paste support
-- Markdown rendering
-- Feedback system (thumbs, ratings, notes)
-- Model updated to grok-4-1-thinking
-
-**v0.5.1 (session management)** ← **Current**
-- SQLite session persistence
-- Token-optimized storage (52% reduction)
-- Extended feedback database
-- Phase 1 foundation for learning system
+- **RAG Query:** 7ms average
+- **Image Generation:** 3-20s (model dependent)
+- **Token Reduction:** 52% with session optimization
+- **Knowledge Base:** 542 chunks, 5.9MB cache
+- **Services:** Replicate, Memory Bank MCP, SessionDB
 
 ---
 
 ## Next Steps
 
-1. **Start searching!** Use `node simple-rag.js search "your query"`
-2. **Explore knowledge files** in `knowledge/core/`
-3. **Read agent patterns** in `agent/agent.md`
-4. **Run tests** with `node test-queries.js`
-5. **Check metrics** in `SYSTEM/efficiency-metrics.json`
+1. ✅ Get Replicate API token → Enable image generation
+2. ✅ Try `/generate-image` endpoint
+3. ✅ Check `/services/status` to see what's enabled
+4. ✅ Explore knowledge files in `knowledge/core/`
+5. ✅ Read `ROADMAP.md` for v1.0 plans
 
 ---
 
-## Support & Documentation
-
-**Performance metrics:** `SYSTEM/efficiency-metrics.json`
-**System status:** `SYSTEM/version.json`
-**Test queries:** `rag/test_validation.md`
-**Build guide:** `rag/RAG_REBUILD_GUIDE.md`
-**Completion reports:** `docs/week*_completion_report.md`
-**Learning roadmap:** `ROADMAP.md` (3-phase learning system plan)
-
----
-
-## Future Phases (Approved, Not Yet Implemented)
-
-**Phase 2:** Server-side optimization with USE_DB_SESSIONS feature flag
-**Phase 3:** LLM-generated summaries for highly-rated sessions
-**Phase 4:** Tab-based UI (Chat | Sessions | Stats)
-**Phase 5:** Message editing with conversation branching
-**Phase 6:** Cleanup and optimization
-
-See `ROADMAP.md` for detailed implementation plan.
-
----
-
-**Status:** System operational and ready for production use 🚀
+**Status:** All integrations operational 🚀
+**Support:** Check logs with `npm start` for service status

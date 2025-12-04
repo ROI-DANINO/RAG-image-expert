@@ -10,6 +10,11 @@ import 'dotenv/config';
 import { SimpleRAG } from './rag/simple-rag.js';
 import { FeedbackDB } from './rag/feedback-db.js';
 import { SessionDB } from './rag/session-db.js';
+import { ReplicateService } from './services/replicate-service.js';
+import { FalService } from './services/fal-service.js';
+import { HuggingFaceService } from './services/huggingface-service.js';
+import { MemoryService } from './services/memory-service.js';
+import { Context7Service } from './services/context7-service.js';
 import express from 'express';
 import cors from 'cors';
 import chalk from 'chalk';
@@ -39,6 +44,26 @@ class RAGServer {
 
     // Feature flag for session persistence
     this.useDBSessions = process.env.USE_DB_SESSIONS === 'true';
+
+    // Initialize new services (modular architecture for v1.0)
+    // Auto-detect which image generation service to use (Fal preferred over Replicate)
+    const falKey = process.env.FAL_API_KEY;
+    const replicateKey = process.env.REPLICATE_API_TOKEN;
+
+    if (falKey) {
+      this.imageService = new FalService(falKey);
+      this.imageProvider = 'fal';
+    } else if (replicateKey) {
+      this.imageService = new ReplicateService(replicateKey);
+      this.imageProvider = 'replicate';
+    } else {
+      this.imageService = new ReplicateService(null); // Disabled placeholder
+      this.imageProvider = 'none';
+    }
+
+    this.memoryService = new MemoryService();
+    this.context7Service = new Context7Service();
+    this.huggingfaceService = new HuggingFaceService(process.env.HUGGINGFACE_API_KEY);
 
     // LLM Configuration
     this.apiKey = process.env.XAI_API_KEY || process.env.AI_API_KEY;
@@ -82,6 +107,35 @@ Keep responses helpful, well-structured, and easy to scan.`;
     await this.rag.initialize();
     this.rag.loadCache();
     console.log(chalk.green('✓ RAG system ready'));
+
+    // Initialize MCP services (optional - won't fail if unavailable)
+    console.log(chalk.cyan('Initializing enhanced services...'));
+
+    try {
+      await this.memoryService.initialize();
+      console.log(chalk.green('✓ Memory Bank connected'));
+    } catch (error) {
+      console.log(chalk.yellow('⚠ Memory Bank unavailable (continuing without it)'));
+    }
+
+    try {
+      await this.context7Service.initialize();
+      console.log(chalk.green('✓ Context7 connected'));
+    } catch (error) {
+      console.log(chalk.yellow('⚠ Context7 unavailable (continuing without it)'));
+    }
+
+    if (this.imageService.isEnabled()) {
+      console.log(chalk.green(`✓ Image generation ready (${this.imageProvider.toUpperCase()})`));
+    } else {
+      console.log(chalk.yellow('⚠ No image generation API key set (FAL_API_KEY or REPLICATE_API_TOKEN)'));
+    }
+
+    if (this.huggingfaceService.isEnabled()) {
+      console.log(chalk.green('✓ HuggingFace service ready (Z-Image-Turbo)'));
+    } else {
+      console.log(chalk.yellow('⚠ HuggingFace API key not set (image-to-image disabled)'));
+    }
   }
 
   async queryRAG(userQuery, topK = 5) {
@@ -296,9 +350,31 @@ Keep responses helpful, well-structured, and easy to scan.`;
 
         const history = this.getSession(sessionId);
 
-        // Get context
+        // Check if we should fetch live docs (Context7)
+        let liveDocs = '';
+        if (this.context7Service.isEnabled() && this.context7Service.shouldFetchLiveDocs(message)) {
+          console.log(chalk.cyan('[Context7] Fetching live documentation...'));
+          liveDocs = await this.context7Service.fetchDocs(message);
+        }
+
+        // Recall past memories (Memory Bank)
+        let memories = '';
+        if (this.memoryService.isEnabled()) {
+          memories = await this.memoryService.recallAll();
+        }
+
+        // Get RAG context
         const results = await this.queryRAG(message, topK);
-        const context = this.formatContext(results);
+        const ragContext = this.formatContext(results);
+
+        // Combine all context sources
+        let context = ragContext;
+        if (liveDocs) {
+          context = `${context}\n\n--- Live Documentation ---\n${liveDocs}`;
+        }
+        if (memories) {
+          context = `${context}\n\n--- Past Memories ---\n${memories.substring(0, 500)}`;
+        }
 
         // Build user message content
         let userContent;
@@ -462,6 +538,301 @@ Keep responses helpful, well-structured, and easy to scan.`;
         enabled: this.useDBSessions,
         tokenOptimization: this.useDBSessions ? '6 messages (52% reduction)' : 'N/A',
         storage: this.useDBSessions ? 'SQLite (rag/sessions.db)' : 'In-memory (ephemeral)'
+      });
+    });
+
+    // ==========================================
+    // Phase 3: Image Generation Endpoints
+    // ==========================================
+
+    // Generate image with RAG-enhanced prompts
+    app.post('/generate-image', async (req, res) => {
+      try {
+        const { prompt, model = 'flux-schnell', sessionId, ...options } = req.body;
+
+        if (!prompt) {
+          return res.status(400).json({ error: 'Prompt is required' });
+        }
+
+        if (!this.imageService.isEnabled()) {
+          return res.status(503).json({
+            error: 'Image generation unavailable. Set FAL_API_KEY or REPLICATE_API_TOKEN in .env'
+          });
+        }
+
+        console.log(chalk.cyan(`[ImageGen] Processing prompt: "${prompt.substring(0, 50)}..."`));
+
+        // Step 1: Get RAG context for prompt enhancement
+        const ragResults = await this.queryRAG(`Best practices for: ${prompt}`, 3);
+        const ragContext = ragResults.map(r => r.content).join('\n');
+
+        // Step 2: Use Grok to enhance the prompt
+        const enhancementMessages = [
+          {
+            role: 'system',
+            content: 'You are an expert at writing prompts for Flux image generation. Enhance the user prompt with technical details while preserving intent. Return ONLY the enhanced prompt, no explanations.'
+          },
+          {
+            role: 'user',
+            content: `Enhance this prompt for Flux:\n${prompt}\n\nContext:\n${ragContext}`
+          }
+        ];
+
+        const enhancedPrompt = await this.queryLLM(enhancementMessages);
+
+        console.log(chalk.green(`[ImageGen] Enhanced prompt: "${enhancedPrompt.substring(0, 80)}..."`));
+
+        // Step 3: Generate image
+        const result = await this.imageService.generateImage(enhancedPrompt, {
+          model,
+          ...options
+        });
+
+        // Step 4: Remember successful generation (Memory Bank)
+        if (this.memoryService.isEnabled()) {
+          await this.memoryService.rememberGeneration({
+            prompt,
+            enhancedPrompt,
+            model,
+            imageUrl: result.images[0],
+            metadata: result.metadata
+          });
+        }
+
+        res.json({
+          success: true,
+          originalPrompt: prompt,
+          enhancedPrompt,
+          images: result.images,
+          metadata: result.metadata
+        });
+
+      } catch (error) {
+        console.error(chalk.red('[ImageGen] Error:'), error);
+
+        // Remember failure (Memory Bank)
+        if (this.memoryService.isEnabled()) {
+          await this.memoryService.rememberFailure({
+            prompt: req.body.prompt,
+            error: error.message,
+            model: req.body.model || 'flux-schnell'
+          });
+        }
+
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get available image generation models
+    app.get('/generate-image/models', (req, res) => {
+      if (!this.imageService.isEnabled()) {
+        return res.status(503).json({
+          error: 'Image generation service unavailable'
+        });
+      }
+
+      res.json({
+        models: this.imageService.getAvailableModels(),
+        provider: this.imageProvider,
+        default: 'flux-schnell'
+      });
+    });
+
+    // Train a custom LoRA model
+    app.post('/train-lora', async (req, res) => {
+      try {
+        const { trigger_word, images_zip_url, steps, learning_rate } = req.body;
+
+        if (!trigger_word || !images_zip_url) {
+          return res.status(400).json({
+            error: 'trigger_word and images_zip_url are required'
+          });
+        }
+
+        if (!this.imageService.isEnabled()) {
+          return res.status(503).json({
+            error: 'Image generation service unavailable'
+          });
+        }
+
+        console.log(chalk.cyan(`[LoRA] Starting training with trigger: "${trigger_word}"`));
+
+        const result = await this.imageService.trainLoRA({
+          trigger_word,
+          images_zip_url,
+          steps,
+          learning_rate
+        });
+
+        res.json(result);
+
+      } catch (error) {
+        console.error(chalk.red('[LoRA] Training error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // ==========================================
+    // HuggingFace Endpoints (Z-Image-Turbo)
+    // ==========================================
+
+    // Enhance/transform existing image (image-to-image)
+    app.post('/enhance-image', async (req, res) => {
+      try {
+        const { image, prompt, strength = 0.8, model = 'z-image-turbo' } = req.body;
+
+        if (!image || !prompt) {
+          return res.status(400).json({ error: 'image and prompt are required' });
+        }
+
+        if (!this.huggingfaceService.isEnabled()) {
+          return res.status(503).json({
+            error: 'HuggingFace service unavailable. Set HUGGINGFACE_API_KEY in .env'
+          });
+        }
+
+        console.log(chalk.cyan(`[Z-Image-Turbo] Enhancing image...`));
+        console.log(chalk.cyan(`[Z-Image-Turbo] Prompt: "${prompt.substring(0, 50)}..."`));
+
+        // Use RAG to enhance the prompt
+        const ragResults = await this.queryRAG(`Best techniques for: ${prompt}`, 2);
+        const ragContext = ragResults.map(r => r.content).join('\n');
+
+        // Optionally enhance prompt with Grok
+        let enhancedPrompt = prompt;
+        if (ragContext) {
+          const enhancementMessages = [
+            {
+              role: 'system',
+              content: 'Enhance this image transformation prompt with technical details. Return ONLY the enhanced prompt.'
+            },
+            {
+              role: 'user',
+              content: `Enhance: ${prompt}\n\nContext:\n${ragContext}`
+            }
+          ];
+          enhancedPrompt = await this.queryLLM(enhancementMessages);
+        }
+
+        console.log(chalk.green(`[Z-Image-Turbo] Enhanced: "${enhancedPrompt.substring(0, 80)}..."`));
+
+        const result = await this.huggingfaceService.imageToImage(image, enhancedPrompt, {
+          model,
+          strength
+        });
+
+        // Remember successful transformation
+        if (this.memoryService.isEnabled()) {
+          await this.memoryService.rememberGeneration({
+            prompt,
+            enhancedPrompt,
+            model: 'z-image-turbo',
+            imageUrl: result.images[0],
+            metadata: result.metadata
+          });
+        }
+
+        res.json({
+          success: true,
+          originalPrompt: prompt,
+          enhancedPrompt,
+          images: result.images,
+          metadata: result.metadata
+        });
+
+      } catch (error) {
+        console.error(chalk.red('[Z-Image-Turbo] Error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get training instructions for Z-Image-Turbo
+    app.post('/train-z-image-turbo', async (req, res) => {
+      try {
+        const config = req.body;
+
+        if (!this.huggingfaceService.isEnabled()) {
+          return res.status(503).json({
+            error: 'HuggingFace service unavailable'
+          });
+        }
+
+        console.log(chalk.cyan('[Training] Generating Z-Image-Turbo training guide...'));
+
+        const instructions = await this.huggingfaceService.trainModel(config);
+
+        res.json(instructions);
+
+      } catch (error) {
+        console.error(chalk.red('[Training] Error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get memory statistics
+    app.get('/memory/stats', async (req, res) => {
+      try {
+        const stats = await this.memoryService.getStats();
+        res.json(stats);
+      } catch (error) {
+        console.error(chalk.red('[Memory] Stats error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Save a preference
+    app.post('/memory/preference', async (req, res) => {
+      try {
+        const { key, value } = req.body;
+
+        if (!key || !value) {
+          return res.status(400).json({ error: 'key and value are required' });
+        }
+
+        if (!this.memoryService.isEnabled()) {
+          return res.status(503).json({ error: 'Memory service unavailable' });
+        }
+
+        await this.memoryService.rememberPreference(key, value);
+
+        res.json({ success: true, key, value });
+
+      } catch (error) {
+        console.error(chalk.red('[Memory] Save preference error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get service status
+    app.get('/services/status', (req, res) => {
+      res.json({
+        imageGeneration: {
+          enabled: this.imageService.isEnabled(),
+          provider: this.imageProvider,
+          models: this.imageService.isEnabled()
+            ? this.imageService.getAvailableModels()
+            : []
+        },
+        imageToImage: {
+          enabled: this.huggingfaceService.isEnabled(),
+          provider: 'huggingface',
+          models: this.huggingfaceService.isEnabled()
+            ? this.huggingfaceService.getAvailableModels()
+            : [],
+          featured: 'z-image-turbo'
+        },
+        memory: {
+          enabled: this.memoryService.isEnabled()
+        },
+        context7: {
+          enabled: this.context7Service.isEnabled()
+        },
+        rag: {
+          enabled: this.rag !== null
+        },
+        sessions: {
+          enabled: this.useDBSessions
+        }
       });
     });
   }
