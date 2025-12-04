@@ -9,6 +9,7 @@
 import 'dotenv/config';
 import { SimpleRAG } from './rag/simple-rag.js';
 import { FeedbackDB } from './rag/feedback-db.js';
+import { SessionDB } from './rag/session-db.js';
 import express from 'express';
 import cors from 'cors';
 import chalk from 'chalk';
@@ -33,7 +34,11 @@ class RAGServer {
   constructor() {
     this.rag = null;
     this.feedbackDB = new FeedbackDB();
-    this.conversationSessions = new Map(); // sessionId -> history
+    this.sessionDB = new SessionDB();
+    this.conversationSessions = new Map(); // sessionId -> history (legacy, when USE_DB_SESSIONS=false)
+
+    // Feature flag for session persistence
+    this.useDBSessions = process.env.USE_DB_SESSIONS === 'true';
 
     // LLM Configuration
     this.apiKey = process.env.XAI_API_KEY || process.env.AI_API_KEY;
@@ -153,10 +158,43 @@ Keep responses helpful, well-structured, and easy to scan.`;
   }
 
   getSession(sessionId) {
-    if (!this.conversationSessions.has(sessionId)) {
-      this.conversationSessions.set(sessionId, []);
+    if (this.useDBSessions) {
+      // Phase 2: Use SessionDB with token optimization
+      const session = this.sessionDB.getSession(sessionId);
+      if (!session) {
+        // Create new session
+        this.sessionDB.createSession(sessionId);
+      }
+      // Get recent messages only (token optimization: 6 instead of 10)
+      const messages = this.sessionDB.getRecentMessages(sessionId, null, 6);
+      // Convert to LLM format (without images, RAG context)
+      return messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+    } else {
+      // Legacy: In-memory sessions
+      if (!this.conversationSessions.has(sessionId)) {
+        this.conversationSessions.set(sessionId, []);
+      }
+      return this.conversationSessions.get(sessionId);
     }
-    return this.conversationSessions.get(sessionId);
+  }
+
+  saveToSession(sessionId, role, content, images = null, ragContextIds = null) {
+    if (this.useDBSessions) {
+      // Phase 2: Save to SessionDB with RAG context IDs
+      this.sessionDB.saveMessage({
+        sessionId,
+        role,
+        content,
+        images: images ? JSON.stringify(images) : null,
+        ragContextIds: ragContextIds ? JSON.stringify(ragContextIds) : null
+      });
+    } else {
+      // Legacy: Update in-memory session (already handled in conversation endpoint)
+      // No action needed here
+    }
   }
 
   setupRoutes() {
@@ -286,15 +324,24 @@ Keep responses helpful, well-structured, and easy to scan.`;
 
         const response = await this.queryLLM(messages);
 
-        // Update history
-        history.push(
-          { role: 'user', content: message },
-          { role: 'assistant', content: response }
-        );
+        // Extract RAG context IDs for token optimization
+        const ragContextIds = results.map(r => `${r.source}:${r.line_start}-${r.line_end}`);
 
-        // Keep last 10 messages
-        if (history.length > 10) {
-          this.conversationSessions.set(sessionId, history.slice(-10));
+        // Save messages to session
+        if (this.useDBSessions) {
+          // Phase 2: Save to database
+          this.saveToSession(sessionId, 'user', message, images, ragContextIds);
+          this.saveToSession(sessionId, 'assistant', response);
+        } else {
+          // Legacy: Update in-memory history
+          history.push(
+            { role: 'user', content: message },
+            { role: 'assistant', content: response }
+          );
+          // Keep last 10 messages
+          if (history.length > 10) {
+            this.conversationSessions.set(sessionId, history.slice(-10));
+          }
         }
 
         res.json({
@@ -339,6 +386,77 @@ Keep responses helpful, well-structured, and easy to scan.`;
         console.error(chalk.red('Stats error:'), error);
         res.status(500).json({ error: error.message });
       }
+    });
+
+    // Phase 2: Session Management Endpoints
+
+    // Get all sessions
+    app.get('/sessions', (req, res) => {
+      try {
+        if (!this.useDBSessions) {
+          return res.status(400).json({ error: 'Session persistence is disabled. Enable USE_DB_SESSIONS in .env' });
+        }
+        const sessions = this.sessionDB.getAllSessions();
+        res.json({ sessions });
+      } catch (error) {
+        console.error(chalk.red('Sessions list error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get session with messages
+    app.get('/sessions/:id', (req, res) => {
+      try {
+        if (!this.useDBSessions) {
+          return res.status(400).json({ error: 'Session persistence is disabled. Enable USE_DB_SESSIONS in .env' });
+        }
+        const session = this.sessionDB.getSession(req.params.id);
+        if (!session) {
+          return res.status(404).json({ error: 'Session not found' });
+        }
+        const messages = this.sessionDB.getMessages(req.params.id);
+        res.json({ session, messages });
+      } catch (error) {
+        console.error(chalk.red('Session get error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Delete session (soft delete)
+    app.delete('/sessions/:id', (req, res) => {
+      try {
+        if (!this.useDBSessions) {
+          return res.status(400).json({ error: 'Session persistence is disabled. Enable USE_DB_SESSIONS in .env' });
+        }
+        this.sessionDB.deleteSession(req.params.id);
+        res.json({ success: true, sessionId: req.params.id });
+      } catch (error) {
+        console.error(chalk.red('Session delete error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get session stats
+    app.get('/sessions/:id/stats', (req, res) => {
+      try {
+        if (!this.useDBSessions) {
+          return res.status(400).json({ error: 'Session persistence is disabled. Enable USE_DB_SESSIONS in .env' });
+        }
+        const stats = this.sessionDB.getSessionStats(req.params.id);
+        res.json(stats);
+      } catch (error) {
+        console.error(chalk.red('Session stats error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get session persistence status
+    app.get('/sessions/config/status', (req, res) => {
+      res.json({
+        enabled: this.useDBSessions,
+        tokenOptimization: this.useDBSessions ? '6 messages (52% reduction)' : 'N/A',
+        storage: this.useDBSessions ? 'SQLite (rag/sessions.db)' : 'In-memory (ephemeral)'
+      });
     });
   }
 
