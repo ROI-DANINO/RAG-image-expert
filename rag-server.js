@@ -184,12 +184,18 @@ Keep responses helpful, well-structured, and easy to scan.`;
   saveToSession(sessionId, role, content, images = null, ragContextIds = null) {
     if (this.useDBSessions) {
       // Phase 2: Save to SessionDB with RAG context IDs
+      const messages = this.sessionDB.getMessages(sessionId);
+      const sequenceNumber = messages.length;
+      const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
       this.sessionDB.saveMessage({
-        sessionId,
+        message_id: messageId,
+        session_id: sessionId,
         role,
         content,
-        images: images ? JSON.stringify(images) : null,
-        ragContextIds: ragContextIds ? JSON.stringify(ragContextIds) : null
+        images,
+        rag_context_ids: ragContextIds,
+        sequence_number: sequenceNumber
       });
     } else {
       // Legacy: Update in-memory session (already handled in conversation endpoint)
