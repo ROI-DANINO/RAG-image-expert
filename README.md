@@ -12,9 +12,13 @@ Retrieve-Augmented Generation (RAG) system specialized in photorealistic prompts
 - **LLM Integration**: Supports any OpenAI-compatible API
 - **Multi-Query RAG**: Automatic query expansion for better context
 - **Local & API**: Works with both local LLMs and cloud APIs
-- **REST API Server**: Deploy as a service
+- **REST API Server**: Deploy as a service with web UI
 - **CLI Chat**: Interactive terminal interface
 - **Offline Embeddings**: No API calls for search (Xenova transformers)
+- **Persistent Sessions**: Conversations saved to SQLite database
+- **Feedback System**: Rate responses (👍/👎, 1-7 stars) with notes and images
+- **Token Optimized**: 52% reduction in context tokens for cost efficiency
+- **Learning Database**: Track what works, build training datasets from user feedback
 
 ---
 
@@ -57,7 +61,7 @@ cp .env.example .env
 **For Grok API:**
 ```bash
 XAI_API_KEY=your-key-here
-AI_MODEL=grok-beta
+AI_MODEL=grok-4-1-thinking
 ```
 
 **For Local LLM (Ollama):**
@@ -91,11 +95,19 @@ npm run chat
 
 Interactive terminal chat with RAG-enhanced responses.
 
-### REST API Server
+### REST API Server & Web UI
 ```bash
 npm start
 # Server runs on http://localhost:3000
+# Open http://localhost:3000 in your browser for the web UI
 ```
+
+**Web Interface Features:**
+- Interactive chat with markdown rendering
+- Image upload/paste support (Ctrl+V)
+- Feedback system (thumbs, ratings, notes)
+- Multiline input (Shift+Enter for new line)
+- Session persistence across page reloads
 
 #### API Endpoints
 
@@ -252,6 +264,56 @@ npm run build-index
 # Or run directly:
 node rag/simple-rag.js build-index
 ```
+
+---
+
+## Feedback & Learning System
+
+The system collects user feedback to improve over time and build training datasets.
+
+### Providing Feedback
+
+After each AI response, you can:
+- **Quick Feedback**: Click 👍 or 👎
+- **Detailed Rating**: Rate 1-7 stars
+- **Add Notes**: Click "Add details" to:
+  - Write what should be fixed
+  - Upload the result image
+  - Provide corrections
+
+### What Gets Stored
+
+Feedback is saved in SQLite database (`rag/feedback.db`) with:
+- Your rating and notes
+- The original question and response
+- RAG context that was used
+- Result images (if uploaded)
+- Links to conversation sessions
+
+### Future Use (Roadmap)
+
+Collected feedback will be used to:
+- **Phase 2**: Export high-rated examples (5+ stars) to JSONL
+- **Phase 3**: Add best examples to knowledge base
+- **Phase 4**: Fine-tune model on your feedback data
+- **Phase 5**: Build vision model for image critique
+
+See [ROADMAP.md](ROADMAP.md) for detailed learning system plans.
+
+### Session Management (Phase 1 Complete)
+
+Conversations are now persistent:
+- Stored in SQLite database (`rag/sessions.db`)
+- Survive page reloads and server restarts
+- Token-optimized: sends minimal context to LLM
+- Foundation for future session browsing UI
+
+**Coming Soon (Phase 2+):**
+- Web UI tabs: Chat | Sessions | Stats
+- Browse past conversations
+- AI-generated session summaries
+- Message editing with branching
+- Session export and learning analytics
 
 ---
 

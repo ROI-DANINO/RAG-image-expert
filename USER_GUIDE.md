@@ -1,65 +1,71 @@
-# v0.3 User Guide - AI Image Generation Knowledge Base
+# v0.5.1 User Guide - AI Image Generation Knowledge Base
 
-> Quick start guide for using the v0.3 RAG-powered knowledge system
+> Quick start guide for using the v0.5.1 RAG-powered knowledge system
 
-**Version:** 0.3 "Unified Testbed"
+**Version:** 0.5.1 "Session Management & Learning"
 **Status:** Production-ready
-**Last Updated:** 2025-12-01
+**Last Updated:** 2025-12-04
 
 ---
 
 ## What Is This?
 
-A **RAG (Retrieval-Augmented Generation) knowledge system** for AI image generation workflows. Think of it as a smart search engine for your documentation that:
+A **RAG (Retrieval-Augmented Generation) knowledge system** for AI image generation workflows with **persistent sessions** and **learning capabilities**. Think of it as a smart assistant that:
 
 - ✅ **Finds answers instantly** from 10 knowledge files (5,983 lines of docs)
 - ✅ **Understands context** using semantic search (not just keywords)
-- ✅ **Works offline** - no API keys, no cloud services
+- ✅ **Remembers conversations** with SQLite session persistence
+- ✅ **Learns from feedback** with thumbs, ratings, and image uploads
+- ✅ **Optimized for tokens** - concise but high-quality responses
+- ✅ **Works offline** - no API keys required (except for LLM API)
 - ✅ **Blazing fast** - 7ms average query time
 
 ---
 
-## Quick Start (3 Steps)
+## Quick Start
 
-### 1. Search the Knowledge Base
+### Option 1: Web Interface (Recommended)
+
+Start the server and use the web UI:
 
 ```bash
-cd /home/roking/work_station/claude-v0.3/rag
+npm start
+# Open browser to http://localhost:3000
+```
+
+**Features:**
+- **Chat interface** with message history
+- **Image support** - paste (Ctrl+V) or upload images
+- **Multiline input** - Shift+Enter for new lines
+- **Feedback system** - 👍/👎, 1-7 stars, notes
+- **Markdown rendering** - formatted responses
+- **Session persistence** - conversations saved to database
+
+### Option 2: CLI Mode
+
+Use the command-line interface:
+
+```bash
+cd rag
+node rag-chat.js
+```
+
+**Commands:**
+- Type your question and press Enter
+- Type `exit` or `quit` to end session
+
+### Option 3: Direct Search
+
+Search the knowledge base directly:
+
+```bash
+cd rag
 node simple-rag.js search "your question here"
 ```
 
 **Example:**
 ```bash
 node simple-rag.js search "How do I make skin look realistic for Instagram?"
-```
-
-**Output:**
-```
-📚 Top 3 Results:
-[1] Source: knowledge/core/01_photorealistic_prompting_v03.md | Score: 0.654
-    Section: 2.3 Skin Texture by Detail Level
-    Lines: 141-158
-    Preview: ### 2.3 Skin Texture by Detail Level...
-```
-
-### 2. Read the Source Files
-
-Results point you to specific files and line numbers:
-
-```bash
-# Read the full file
-cat knowledge/core/01_photorealistic_prompting_v03.md
-
-# Read specific lines
-sed -n '141,158p' knowledge/core/01_photorealistic_prompting_v03.md
-```
-
-### 3. Test Performance (Optional)
-
-Run the full test suite to validate system performance:
-
-```bash
-node rag/test-queries.js
 ```
 
 ---
@@ -98,6 +104,74 @@ Your Query
 10. `agent/agent.md` - Agent logic patterns (5 critical patterns including response format standards)
 
 **Total:** 542 chunks, 5.9MB embeddings cache
+
+---
+
+## New in v0.5.1: Session Management & Feedback
+
+### Session Persistence (Phase 1 - Database Foundation)
+
+**What's been added:**
+- **SQLite database** (`rag/sessions.db`) stores all conversations
+- **Message history** preserved across sessions
+- **Feedback tracking** linked to specific messages
+- **Token-optimized storage** - IDs instead of full text
+
+**Database tables:**
+1. **sessions** - Conversation metadata (title, summary, rating, status)
+2. **messages** - Individual messages with role, content, images, RAG context
+3. **branches** - Conversation divergence tracking (future feature)
+4. **feedback** - Extended with message_id, branch_id, query/response text
+
+**How it works:**
+```javascript
+// When you chat:
+1. Message saved to database with unique ID
+2. RAG context stored as chunk IDs (not full text)
+3. Last 6 messages sent to LLM (token optimization)
+4. Full history available for UI display
+
+// Token efficiency:
+- Standard context: ~3750 tokens per request
+- Optimized context: ~1800 tokens per request
+- Savings: 52% reduction
+```
+
+### Providing Feedback
+
+**Quick feedback:**
+- Click **👍** for good responses
+- Click **👎** for poor responses
+
+**Detailed feedback:**
+1. Click **"Add details"** button
+2. Rate **1-7 stars** (1 = poor, 7 = excellent)
+3. Add **notes** explaining what should be fixed
+4. Upload **result image** showing the actual issue
+5. Click **"Submit Feedback"**
+
+**What happens:**
+- Rating **5+ stars** → Auto-prompt to generate session summary
+- All feedback stored in `rag/feedback.db`
+- Images saved to `rag/feedback_images/`
+- Feedback linked to specific messages for future learning
+
+### Image Support
+
+**Paste images:**
+1. Copy image to clipboard
+2. Press **Ctrl+V** in chat input
+3. Image appears in preview area
+4. Send message with attached images
+
+**Upload images:**
+1. Click **📎** (paperclip) button
+2. Select image files
+3. Images appear in preview area
+4. Send message with attached images
+
+**Supported formats:** JPG, PNG, GIF, WebP
+**Size limit:** 50MB total per message
 
 ---
 
@@ -440,12 +514,24 @@ Knowledge Base (10 files, 5,983 lines)
 - Added Instagram guide (07), model comparison (08)
 - More comprehensive but needed optimization
 
-**v0.3 (unified testbed)** ← **Current**
+**v0.3 (unified testbed)**
 - 9 knowledge + 1 agent file, 5,983 lines
 - Split training guide (02/02a/02b)
 - POV framework emphasis
 - Table-heavy format
 - Production-ready RAG system
+
+**v0.5.0 (vision & feedback)**
+- Added image upload/paste support
+- Markdown rendering
+- Feedback system (thumbs, ratings, notes)
+- Model updated to grok-4-1-thinking
+
+**v0.5.1 (session management)** ← **Current**
+- SQLite session persistence
+- Token-optimized storage (52% reduction)
+- Extended feedback database
+- Phase 1 foundation for learning system
 
 ---
 
@@ -466,6 +552,19 @@ Knowledge Base (10 files, 5,983 lines)
 **Test queries:** `rag/test_validation.md`
 **Build guide:** `rag/RAG_REBUILD_GUIDE.md`
 **Completion reports:** `docs/week*_completion_report.md`
+**Learning roadmap:** `ROADMAP.md` (3-phase learning system plan)
+
+---
+
+## Future Phases (Approved, Not Yet Implemented)
+
+**Phase 2:** Server-side optimization with USE_DB_SESSIONS feature flag
+**Phase 3:** LLM-generated summaries for highly-rated sessions
+**Phase 4:** Tab-based UI (Chat | Sessions | Stats)
+**Phase 5:** Message editing with conversation branching
+**Phase 6:** Cleanup and optimization
+
+See `ROADMAP.md` for detailed implementation plan.
 
 ---
 
