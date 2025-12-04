@@ -154,6 +154,115 @@
             color: #666;
         }
 
+        /* Feedback UI styles */
+        .feedback-container {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .feedback-btn {
+            background: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .feedback-btn:hover {
+            background: #f5f5f5;
+            transform: scale(1.1);
+        }
+
+        .feedback-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .feedback-btn.thumbs-up.active {
+            background: #4ade80;
+            border-color: #4ade80;
+        }
+
+        .feedback-btn.thumbs-down.active {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 4px;
+        }
+
+        .star {
+            cursor: pointer;
+            font-size: 18px;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #fbbf24;
+        }
+
+        .feedback-expand {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+
+        .feedback-details {
+            margin-top: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .feedback-details.show {
+            display: flex;
+        }
+
+        .feedback-details textarea {
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .feedback-details button {
+            align-self: flex-end;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .feedback-details button:hover {
+            background: #5568d3;
+        }
+
         .context-info {
             font-size: 11px;
             color: #666;
@@ -422,7 +531,7 @@
         let isFirstMessage = true;
         let attachedImages = [];
 
-        function addMessage(content, isUser, context = null) {
+        function addMessage(content, isUser, context = null, images = null) {
             const chatContainer = document.getElementById('chatContainer');
 
             // Remove welcome message on first real message
@@ -440,7 +549,27 @@
 
             // Render markdown for assistant messages, plain text for user
             if (isUser) {
-                contentDiv.textContent = content;
+                // Show images if attached
+                if (images && images.length > 0) {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'message-images';
+                    imageContainer.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;';
+
+                    images.forEach(img => {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = img.data;
+                        imgEl.alt = img.name;
+                        imgEl.style.cssText = 'max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;';
+                        imageContainer.appendChild(imgEl);
+                    });
+
+                    contentDiv.appendChild(imageContainer);
+                }
+
+                // Add text content
+                const textDiv = document.createElement('div');
+                textDiv.textContent = content;
+                contentDiv.appendChild(textDiv);
             } else {
                 contentDiv.innerHTML = marked.parse(content);
             }
@@ -452,7 +581,35 @@
                 const contextDiv = document.createElement('div');
                 contextDiv.className = 'context-info';
                 contextDiv.innerHTML = `<strong>Sources:</strong> ${context.map(c => c.source).join(', ')}`;
-                messageDiv.appendChild(contextDiv);
+                contentDiv.appendChild(contextDiv);
+            }
+
+            // Add feedback UI for assistant messages
+            if (!isUser) {
+                const feedbackId = 'feedback-' + Date.now();
+                const feedbackHTML = `
+                    <div class="feedback-container" id="${feedbackId}">
+                        <div class="feedback-buttons">
+                            <button class="feedback-btn thumbs-up" onclick="toggleThumb('${feedbackId}', 'up')" title="Good response">👍</button>
+                            <button class="feedback-btn thumbs-down" onclick="toggleThumb('${feedbackId}', 'down')" title="Bad response">👎</button>
+                        </div>
+                        <div class="star-rating" id="${feedbackId}-stars">
+                            ${[1,2,3,4,5,6,7].map(i => `<span class="star" onclick="setRating('${feedbackId}', ${i})">★</span>`).join('')}
+                        </div>
+                        <button class="feedback-expand" onclick="toggleFeedbackDetails('${feedbackId}')">Add details</button>
+                    </div>
+                    <div class="feedback-details" id="${feedbackId}-details">
+                        <textarea placeholder="What should be fixed? (optional)" rows="3" id="${feedbackId}-notes"></textarea>
+                        <input type="file" id="${feedbackId}-image" accept="image/*" style="display:none;" onchange="handleFeedbackImage('${feedbackId}', event)">
+                        <button onclick="document.getElementById('${feedbackId}-image').click()" style="align-self: flex-start; background: #764ba2;">📷 Add result image</button>
+                        <div id="${feedbackId}-image-preview" style="display:none; margin: 8px 0;">
+                            <img style="max-width: 200px; border-radius: 8px;" id="${feedbackId}-img">
+                            <button onclick="removeFeedbackImage('${feedbackId}')" style="background: #ef4444; margin-left: 8px;">Remove</button>
+                        </div>
+                        <button onclick="submitFeedback('${feedbackId}')">Submit Feedback</button>
+                    </div>
+                `;
+                contentDiv.insertAdjacentHTML('beforeend', feedbackHTML);
             }
 
             chatContainer.appendChild(messageDiv);
@@ -503,8 +660,11 @@
             input.disabled = true;
             sendButton.disabled = true;
 
-            // Add user message
-            addMessage(message || '[Image attached]', true);
+            // Save images for display
+            const imagesToDisplay = [...attachedImages];
+
+            // Add user message with images
+            addMessage(message || 'Please analyze this image', true, null, imagesToDisplay);
             input.value = '';
 
             // Prepare request body
@@ -520,7 +680,6 @@
             }
 
             // Clear attached images and preview
-            const imagesToSend = [...attachedImages];
             attachedImages = [];
             updateImagePreview();
 
@@ -642,6 +801,96 @@
         function removeImage(index) {
             attachedImages.splice(index, 1);
             updateImagePreview();
+        }
+
+        // Feedback functions
+        let feedbackData = {};
+
+        function toggleThumb(feedbackId, direction) {
+            const container = document.getElementById(feedbackId);
+            const upBtn = container.querySelector('.thumbs-up');
+            const downBtn = container.querySelector('.thumbs-down');
+
+            if (direction === 'up') {
+                upBtn.classList.toggle('active');
+                downBtn.classList.remove('active');
+                feedbackData[feedbackId] = {...(feedbackData[feedbackId] || {}), thumbs: upBtn.classList.contains('active') ? 'up' : null};
+            } else {
+                downBtn.classList.toggle('active');
+                upBtn.classList.remove('active');
+                feedbackData[feedbackId] = {...(feedbackData[feedbackId] || {}), thumbs: downBtn.classList.contains('active') ? 'down' : null};
+            }
+        }
+
+        function setRating(feedbackId, rating) {
+            const stars = document.querySelectorAll(`#${feedbackId}-stars .star`);
+            stars.forEach((star, i) => {
+                if (i < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+            feedbackData[feedbackId] = {...(feedbackData[feedbackId] || {}), rating};
+        }
+
+        function toggleFeedbackDetails(feedbackId) {
+            const details = document.getElementById(`${feedbackId}-details`);
+            details.classList.toggle('show');
+        }
+
+        function handleFeedbackImage(feedbackId, event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    feedbackData[feedbackId] = {...(feedbackData[feedbackId] || {}), resultImage: e.target.result};
+                    document.getElementById(`${feedbackId}-img`).src = e.target.result;
+                    document.getElementById(`${feedbackId}-image-preview`).style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeFeedbackImage(feedbackId) {
+            delete feedbackData[feedbackId]?.resultImage;
+            document.getElementById(`${feedbackId}-image-preview`).style.display = 'none';
+            document.getElementById(`${feedbackId}-image`).value = '';
+        }
+
+        async function submitFeedback(feedbackId) {
+            const notes = document.getElementById(`${feedbackId}-notes`).value;
+            const data = feedbackData[feedbackId] || {};
+
+            if (notes) data.notes = notes;
+
+            if (!data.thumbs && !data.rating && !notes) {
+                alert('Please provide some feedback (thumbs, rating, or notes)');
+                return;
+            }
+
+            try {
+                const response = await fetch('/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        feedbackId,
+                        sessionId,
+                        timestamp: new Date().toISOString(),
+                        ...data
+                    })
+                });
+
+                if (response.ok) {
+                    // Show success
+                    const container = document.getElementById(feedbackId);
+                    container.innerHTML = '<span style="color: #4ade80;">✓ Thanks for your feedback!</span>';
+                } else {
+                    throw new Error('Failed to submit feedback');
+                }
+            } catch (error) {
+                alert('Failed to submit feedback: ' + error.message);
+            }
         }
 
         // Focus input on load

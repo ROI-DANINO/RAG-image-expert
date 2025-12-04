@@ -8,6 +8,7 @@
 
 import 'dotenv/config';
 import { SimpleRAG } from './rag/simple-rag.js';
+import { FeedbackDB } from './rag/feedback-db.js';
 import express from 'express';
 import cors from 'cors';
 import chalk from 'chalk';
@@ -31,6 +32,7 @@ app.use(express.static(join(__dirname, 'public')));
 class RAGServer {
   constructor() {
     this.rag = null;
+    this.feedbackDB = new FeedbackDB();
     this.conversationSessions = new Map(); // sessionId -> history
 
     // LLM Configuration
@@ -315,6 +317,28 @@ Keep responses helpful, well-structured, and easy to scan.`;
       const { sessionId } = req.params;
       this.conversationSessions.delete(sessionId);
       res.json({ message: 'Conversation cleared', sessionId });
+    });
+
+    // Feedback endpoint
+    app.post('/feedback', async (req, res) => {
+      try {
+        const result = this.feedbackDB.saveFeedback(req.body);
+        res.json(result);
+      } catch (error) {
+        console.error(chalk.red('Feedback error:'), error);
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Get feedback stats
+    app.get('/feedback/stats', (req, res) => {
+      try {
+        const stats = this.feedbackDB.getStats();
+        res.json(stats);
+      } catch (error) {
+        console.error(chalk.red('Stats error:'), error);
+        res.status(500).json({ error: error.message });
+      }
     });
   }
 

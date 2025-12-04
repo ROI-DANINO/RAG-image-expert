@@ -9,6 +9,10 @@ rag/embeddings/
 rag/.cache/
 *.cache
 
+# Feedback data (private user data)
+rag/feedback.db
+rag/feedback_images/
+
 # Environment
 .env
 .env.local
