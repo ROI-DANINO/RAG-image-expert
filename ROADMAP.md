@@ -304,25 +304,200 @@ curl http://localhost:3000/services/status
 
 ## Phase 4: UI Integration for Image Generation (NEXT)
 
-**Goal:** Add image generation UI to web interface
+**Goal:** Add image generation UI to web interface with API key management
 
 ### Tasks (Planned)
+
+**4.1: Settings Panel with API Key Management**
+- [ ] Create Settings modal/panel (⚙️ icon in header)
+- [ ] **API Keys Section** (instead of .env file):
+  - [ ] Input field: `XAI_API_KEY` (Grok) - Required
+  - [ ] Input field: `FAL_API_KEY` (Image generation) - Optional
+  - [ ] Input field: `REPLICATE_API_TOKEN` (Alternative) - Optional
+  - [ ] Input field: `HUGGINGFACE_API_KEY` (Z-Image-Turbo) - Optional
+  - [ ] Password-style inputs (hidden by default, show/hide button)
+  - [ ] "Test Connection" button for each key
+  - [ ] Status indicators (🟢 Connected, 🔴 Invalid, ⚪ Not set)
+  - [ ] Save keys to localStorage (browser-only, not server)
+  - [ ] Warning: "Keys stored in browser only. Clear on logout."
+- [ ] **Feature Toggles**:
+  - [ ] `USE_DB_SESSIONS` on/off toggle
+  - [ ] Show which services are enabled (from `/services/status`)
+- [ ] **Current Provider Display**:
+  - [ ] "Image Generation: Fal.ai" (or "None", "Replicate")
+  - [ ] "Image-to-Image: HuggingFace Z-Image-Turbo" (or "None")
+
+**4.2: Image Generation Interface**
 - [ ] Add "Generate Image" button in chat interface
 - [ ] Show enhanced prompt before generation
 - [ ] Display generated images inline
-- [ ] Add model selector dropdown (flux-schnell, flux-dev, etc.)
+- [ ] Add model selector dropdown (flux-schnell, flux-dev, z-image-turbo)
 - [ ] Add generation settings panel:
   - Width/Height sliders
   - Steps slider
   - Guidance scale
   - Seed (for reproducibility)
-- [ ] Show generation metadata (duration, model used)
+- [ ] Show generation metadata (duration, model used, cost estimate)
 - [ ] Save generated images to session history
-- [ ] Add LoRA training UI
-- [ ] Settings panel to toggle feature flags:
-  - USE_DB_SESSIONS on/off
-  - Available services status
-  - API tokens configured
+
+**4.3: Image-to-Image Interface**
+- [ ] Upload/paste existing image
+- [ ] Transformation prompt input
+- [ ] Strength slider (how much to transform)
+- [ ] Preview original vs transformed side-by-side
+
+**4.4: Training UI**
+- [ ] LoRA training request form
+- [ ] Z-Image-Turbo training guide display
+- [ ] Training status tracker
+
+### API Key Flow (New Approach)
+
+**Old:** User edits `.env` file → Restarts server
+**New:** User enters keys in UI → Stored in localStorage → Sent with each request
+
+**Implementation:**
+```javascript
+// Frontend stores keys in localStorage
+localStorage.setItem('apiKeys', JSON.stringify({
+  xai: 'key...',
+  fal: 'key...',
+  huggingface: 'key...'
+}));
+
+// Each API request includes keys in headers
+fetch('/generate-image', {
+  headers: {
+    'X-FAL-API-Key': localStorage.getItem('apiKeys').fal
+  },
+  body: { prompt: '...' }
+});
+
+// Server checks header first, falls back to .env
+const falKey = req.headers['x-fal-api-key'] || process.env.FAL_API_KEY;
+```
+
+**Security Considerations:**
+- ⚠️ Keys in localStorage are accessible to JavaScript (XSS risk)
+- ✅ Keys never stored on server (privacy)
+- ✅ User controls their own keys
+- 🔒 HTTPS required in production
+- 🔄 Option to still use .env for server-managed keys
+
+**UI/UX Benefits:**
+- ✅ No need to edit files
+- ✅ No server restart required
+- ✅ Instant provider switching
+- ✅ Easy to test multiple keys
+- ✅ Clear visual status of what's enabled
+
+---
+
+## Phase 4.5: Prompt Library & History (SMART ADDITION)
+
+**Goal:** Build a reusable prompt library from successful generations
+
+### Tasks (Planned)
+- [ ] **Prompt Library**:
+  - [ ] Save successful prompts (original + enhanced)
+  - [ ] Star/favorite prompts
+  - [ ] Tag prompts by style (cyberpunk, realistic, fantasy)
+  - [ ] Search library by tags or keywords
+  - [ ] "Use this prompt" button to copy to input
+  - [ ] Export library as JSON
+- [ ] **Generation History**:
+  - [ ] View all past generations with thumbnails
+  - [ ] Filter by model, date, rating
+  - [ ] Regenerate with same settings
+  - [ ] Compare variations (same prompt, different seeds)
+- [ ] **Smart Suggestions**:
+  - [ ] "Similar prompts" based on current input
+  - [ ] Auto-suggest tags based on prompt content
+  - [ ] Show cost estimate before generating
+
+### Why This Matters:
+- ✅ Learn from successful patterns
+- ✅ Faster iteration (no rewriting prompts)
+- ✅ Build personal style guide
+- ✅ Track what works best
+
+---
+
+## Phase 4.6: Batch Operations & Workflows (POWER USER FEATURES)
+
+**Goal:** Enable professional workflows for multiple generations
+
+### Tasks (Planned)
+- [ ] **Batch Generation**:
+  - [ ] Upload CSV with prompts → Generate all
+  - [ ] Generate variations (same prompt, 10 different seeds)
+  - [ ] A/B testing (compare 2 prompts side-by-side)
+  - [ ] Queue system (generate 50 images overnight)
+- [ ] **Workflows**:
+  - [ ] Pipeline: Generate → Enhance (Z-Image-Turbo) → Upscale
+  - [ ] Auto-apply LoRA to all generations
+  - [ ] Preset profiles (Instagram style, Product shots, etc.)
+- [ ] **Export/Import**:
+  - [ ] Download all images as ZIP
+  - [ ] Export metadata as CSV (for dataset creation)
+  - [ ] Import existing datasets for LoRA training
+
+### Why This Matters:
+- ✅ Professional use cases (agencies, creators)
+- ✅ Dataset creation for training
+- ✅ Time savings (automation)
+
+---
+
+## Phase 4.7: Cost Tracking & Analytics (BUSINESS INTELLIGENCE)
+
+**Goal:** Track costs and optimize spending
+
+### Tasks (Planned)
+- [ ] **Cost Dashboard**:
+  - [ ] Total spent per provider (Fal, Replicate, HF)
+  - [ ] Cost per image by model
+  - [ ] Monthly spending chart
+  - [ ] Budget alerts ("You've spent $50 this month")
+- [ ] **Performance Analytics**:
+  - [ ] Average generation time by model
+  - [ ] Success rate (% of generations that worked)
+  - [ ] Most-used models
+  - [ ] Peak usage times
+- [ ] **ROI Tracking**:
+  - [ ] Tag generations by project/client
+  - [ ] Cost per project
+  - [ ] Compare provider costs (Fal vs Replicate)
+
+### Why This Matters:
+- ✅ Budget control
+- ✅ Provider optimization (choose cheapest)
+- ✅ Client billing transparency
+
+---
+
+## Phase 4.8: Collaboration & Sharing (TEAM FEATURES)
+
+**Goal:** Enable team workflows and sharing
+
+### Tasks (Planned)
+- [ ] **User Accounts**:
+  - [ ] Simple auth (email/password or GitHub OAuth)
+  - [ ] Per-user API keys and sessions
+  - [ ] User-specific prompt libraries
+- [ ] **Sharing**:
+  - [ ] Share generated images with link
+  - [ ] Share prompts with team
+  - [ ] Public gallery (opt-in)
+- [ ] **Team Features**:
+  - [ ] Shared prompt library
+  - [ ] Comment on generations
+  - [ ] Approve/reject workflow
+
+### Why This Matters:
+- ✅ Team collaboration
+- ✅ Knowledge sharing
+- ✅ Quality control
 
 ---
 
