@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2025-12-05
+
+### Fixed
+- **Context7 MCP Service:** Fixed package name from `@upsoft/mcp-server-context7` to `@upstash/context7-mcp`
+  - Service now connects successfully
+  - Enables live documentation fetching
+  - File: `services/context7-service.js:45`
+
+- **Network Reliability:** Added automatic retry logic with exponential backoff
+  - Handles DNS failures (EAI_AGAIN) common in WSL2
+  - 3 retry attempts with 1s → 2s → 4s delays
+  - File: `rag-server.js:186-213`
+
+- **Error Handling:** Enhanced error responses with troubleshooting guidance
+  - User-friendly error messages for DNS/network issues
+  - Actionable solutions (DNS config, WSL restart)
+  - File: `rag-server.js:470-526`
+
+### Changed
+- **MemoryService:** Temporarily disabled recall due to MCP SDK compatibility
+  - Memory writes still functional
+  - Reads gracefully degrade without errors
+  - Added `enableRecall` flag for future re-enablement
+  - Files: `services/memory-service.js:19,183,238`
+
+### Documentation
+- Updated README.md with new troubleshooting section
+  - Network & MCP Service Issues
+  - DNS resolution fixes for WSL2
+  - Context7 and Memory Bank status
+- Updated TESTING_CHECKLIST.md with resolved issues
+- Updated .env.example with Ollama fallback recommendation
+
+## [0.5.1] - Previous
+
 ### Added
 - Response Format Standards section in agent.md (48 lines)
   - Concise agent communication guidelines

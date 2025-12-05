@@ -406,6 +406,35 @@ ls simple-rag.js  # Should exist
 - Reduce `topK` for less context
 - Check your system has enough RAM (4GB+ recommended)
 
+### Network & MCP Service Issues
+
+**DNS Resolution Failures (WSL2)**
+
+If you see errors like `getaddrinfo EAI_AGAIN api.x.ai`:
+```bash
+# Temporary fix (resets on WSL restart)
+echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+
+# Or restart WSL (from Windows PowerShell as admin)
+wsl --shutdown
+```
+
+The server now includes automatic retry logic (3 attempts with exponential backoff) to handle temporary network issues.
+
+**Context7 MCP Connection Issues**
+
+The server uses `@upstash/context7-mcp` for live documentation fetching. If you see connection errors:
+- This is optional - the server continues without it
+- Uses `npx -y @upstash/context7-mcp` (auto-installed on first run)
+- Check logs for "[Context7Service] Connected successfully"
+
+**Memory Bank MCP**
+
+Memory recall is temporarily disabled due to SDK compatibility:
+- Memory writes still work (saves preferences, generation history)
+- Reads gracefully degrade (no impact on functionality)
+- To re-enable: Set `this.enableRecall = true` in `services/memory-service.js:19`
+
 ---
 
 ## License

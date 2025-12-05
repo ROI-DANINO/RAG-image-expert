@@ -14,6 +14,9 @@ export class MemoryService {
     this.client = null;
     this.enabled = false;
     this.isConnecting = false;
+    // Disable recall temporarily due to MCP SDK compatibility issue
+    // Writes still work, reads gracefully fail
+    this.enableRecall = false;
   }
 
   /**
@@ -177,29 +180,51 @@ export class MemoryService {
    * @returns {Promise<string>} Formatted memory context
    */
   async recallAll() {
-    if (!this.enabled) {
+    if (!this.enabled || !this.enableRecall) {
       return '';
     }
 
     try {
       const result = await this.client.request({
-        method: 'resources/read',
-        params: { uri: 'memory://graph' }
+        method: 'tools/call',
+        params: {
+          name: 'read_graph',
+          arguments: {}
+        }
       });
 
-      if (!result || !result.contents || result.contents.length === 0) {
+      // Handle various response formats
+      if (!result) {
         return '';
       }
 
-      // Parse and format memories
-      const memoryText = result.contents[0].text || '';
+      // Try different response structures
+      let memoryText = '';
 
-      console.log('[MemoryService] Recalled memories:', memoryText.substring(0, 200) + '...');
+      if (result.content && Array.isArray(result.content) && result.content.length > 0) {
+        // Standard MCP response format
+        memoryText = result.content[0]?.text || '';
+      } else if (result.text) {
+        // Direct text response
+        memoryText = result.text;
+      } else if (typeof result === 'string') {
+        // String response
+        memoryText = result;
+      } else if (result.entities || result.relations) {
+        // Graph structure response - format it
+        memoryText = JSON.stringify(result, null, 2);
+      }
+
+      if (memoryText) {
+        const preview = memoryText.length > 200 ? memoryText.substring(0, 200) + '...' : memoryText;
+        console.log('[MemoryService] Recalled memories:', preview);
+      }
 
       return memoryText;
 
     } catch (error) {
       console.error('[MemoryService] Failed to recall memories:', error.message);
+      // Gracefully degrade - memory recall is optional
       return '';
     }
   }
@@ -210,7 +235,7 @@ export class MemoryService {
    * @returns {Promise<Array>} Filtered memories
    */
   async recallByType(entityType) {
-    if (!this.enabled) {
+    if (!this.enabled || !this.enableRecall) {
       return [];
     }
 

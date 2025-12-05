@@ -42,7 +42,7 @@ export class Context7Service {
 
       const transport = new StdioClientTransport({
         command: 'npx',
-        args: ['-y', '@upsoft/mcp-server-context7']
+        args: ['-y', '@upstash/context7-mcp']
       });
 
       await this.client.connect(transport);

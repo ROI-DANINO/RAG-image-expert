@@ -1,6 +1,6 @@
 {
   "name": "rag-image-expert",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "RAG-powered AI image generation assistant with LLM integration",
   "type": "module",
   "main": "rag-server.js",

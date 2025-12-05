@@ -183,6 +183,35 @@ Keep responses helpful, well-structured, and easy to scan.`;
     ).join('\n\n---\n\n');
   }
 
+  /**
+   * Retry wrapper for network operations with exponential backoff
+   * @param {Function} fn - Async function to retry
+   * @param {number} maxRetries - Maximum retry attempts
+   * @param {number} baseDelay - Base delay in ms
+   * @returns {Promise} Result of the function
+   */
+  async retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        const isLastAttempt = attempt === maxRetries;
+        const isNetworkError = error.cause?.code === 'EAI_AGAIN' ||
+                               error.cause?.code === 'ENOTFOUND' ||
+                               error.cause?.code === 'ETIMEDOUT' ||
+                               error.message.includes('fetch failed');
+
+        if (isLastAttempt || !isNetworkError) {
+          throw error;
+        }
+
+        const delay = baseDelay * Math.pow(2, attempt - 1);
+        console.log(`[Retry ${attempt}/${maxRetries}] Network error, retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
   async queryLLM(messages) {
     const requestBody = {
       model: this.model,
@@ -196,19 +225,22 @@ Keep responses helpful, well-structured, and easy to scan.`;
       headers['Authorization'] = `Bearer ${this.apiKey}`;
     }
 
-    const response = await fetch(`${this.baseURL}/chat/completions`, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(requestBody)
-    });
+    // Retry with exponential backoff for network errors
+    return await this.retryWithBackoff(async () => {
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(requestBody)
+      });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`LLM API error: ${response.status} - ${error}`);
-    }
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`LLM API error: ${response.status} - ${error}`);
+      }
 
-    const data = await response.json();
-    return data.choices[0].message.content;
+      const data = await response.json();
+      return data.choices[0].message.content;
+    }, 3, 1000);
   }
 
   getSession(sessionId) {
@@ -437,7 +469,60 @@ Keep responses helpful, well-structured, and easy to scan.`;
         });
       } catch (error) {
         console.error(chalk.red('Conversation error:'), error);
-        res.status(500).json({ error: error.message });
+
+        // Provide user-friendly error messages with troubleshooting steps
+        let errorMessage = error.message;
+        let troubleshooting = null;
+
+        // Network/DNS errors
+        if (error.cause?.code === 'EAI_AGAIN' || error.cause?.code === 'ENOTFOUND') {
+          errorMessage = 'Unable to reach the AI service. This appears to be a DNS/network issue.';
+          troubleshooting = {
+            issue: 'DNS Resolution Failure',
+            possibleCauses: [
+              'Temporary network connectivity issue (common in WSL2)',
+              'DNS server not responding',
+              'Firewall blocking DNS queries',
+              'api.x.ai service temporarily unreachable'
+            ],
+            solutions: [
+              'Check your internet connection',
+              'Try: ping api.x.ai',
+              'Update DNS: echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf',
+              'Restart WSL2: wsl --shutdown (from Windows PowerShell)',
+              'Consider using a local LLM fallback (see .env.example for Ollama setup)'
+            ]
+          };
+        }
+        // Timeout errors
+        else if (error.cause?.code === 'ETIMEDOUT' || error.message.includes('timeout')) {
+          errorMessage = 'Request to AI service timed out. The service may be slow or unreachable.';
+          troubleshooting = {
+            issue: 'Request Timeout',
+            solutions: [
+              'Check your internet connection speed',
+              'Try again in a few moments',
+              'Consider using a local LLM (Ollama) for better reliability'
+            ]
+          };
+        }
+        // API errors
+        else if (error.message.includes('LLM API error')) {
+          troubleshooting = {
+            issue: 'API Error',
+            solutions: [
+              'Check your XAI_API_KEY in .env file',
+              'Verify API key is valid at https://console.x.ai/',
+              'Check if you have API credits remaining'
+            ]
+          };
+        }
+
+        res.status(500).json({
+          error: errorMessage,
+          troubleshooting,
+          originalError: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
       }
     });
 

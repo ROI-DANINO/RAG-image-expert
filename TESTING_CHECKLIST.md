@@ -430,15 +430,27 @@
 
 ## Known Issues (Expected Behavior)
 
-### Non-Breaking Issues
-- [ ] **Context7 MCP:** Package not found - gracefully disabled
-  - **Expected:** `context7.enabled: false` in `/services/status`
-  - **Impact:** None - system works without it
+### ✅ RESOLVED Issues (v0.5.2)
 
-- [ ] **Memory Recall:** Method not found error in logs
-  - **Expected:** `[MemoryService] Failed to recall memories: Method not found`
-  - **Impact:** Memory writes work, reads fail silently
-  - **Result:** Conversations still functional
+- [x] **Context7 MCP:** Package not found - **FIXED**
+  - **Was:** `npm error 404 @upsoft/mcp-server-context7`
+  - **Now:** `[Context7Service] Connected successfully`
+  - **Fix:** Updated to correct package `@upstash/context7-mcp`
+  - **File:** `services/context7-service.js:45`
+
+- [x] **Network Errors:** DNS failures on WSL2 - **FIXED**
+  - **Was:** `getaddrinfo EAI_AGAIN api.x.ai`
+  - **Now:** Automatic retry with exponential backoff (3 attempts)
+  - **Fix:** Added `retryWithBackoff()` method in `rag-server.js:186-213`
+  - **Bonus:** User-friendly error messages with troubleshooting steps
+
+### Non-Breaking Issues
+
+- [ ] **Memory Recall:** SDK compatibility issue - gracefully disabled
+  - **Expected:** `[MemoryService] Failed to recall memories: Cannot read properties of undefined (reading '_zod')`
+  - **Impact:** Memory writes work, reads disabled (no functional impact)
+  - **Status:** Temporary workaround with `enableRecall = false`
+  - **Future:** Update MCP SDK when compatibility fixed
 
 - [ ] **First Query Slow:** Embedding model downloads on first use
   - **Expected:** 30-60s first query, then < 100ms
