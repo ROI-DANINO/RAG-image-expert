@@ -2,7 +2,7 @@
 
 > Quick diagnostic flowchart and fix tables
 >
-> **Last updated:** 2025-11-28 (v0.3)
+> **Last updated:** 2025-12-04 (v0.4)
 > **Related:** 02_ostris_training_core.md, 02a_qwen_specifics.md
 
 ---
@@ -30,7 +30,21 @@
 
 ---
 
-## Pre-Training Validation
+## API Service Generation Issues
+
+If you are having trouble generating images using an API service like Fal.ai or Replicate, check these common issues first.
+
+| Symptom | Possible Cause | Solution |
+| :--- | :--- | :--- |
+| **401 Unauthorized Error** | Invalid or missing API key. | Ensure your `FAL_API_KEY` or `REPLICATE_API_KEY` is set correctly in your `.env` file. |
+| **Model Not Found** | The requested model is not available on the service. | Check the model name against the available models in the documentation (e.g., `09_fal_ai_integration.md`). Use a valid model path. |
+| **Slow Generation** | The service is under heavy load or you are using a slower model. | Try a faster model (e.g., `flux-schnell` on Fal.ai). If the issue persists, check the service's status page. |
+| **Poor Quality Results** | Low inference steps or weak prompt. | Increase `num_inference_steps` to `40` or more. Refine your prompt to be more descriptive. |
+| **LoRA Not Working** | The LoRA URL is invalid or the trigger word is missing. | Ensure the LoRA URL is public and accessible. Double-check that your prompt includes the correct trigger word. |
+
+---
+
+## LoRA Training - Pre-Training Validation
 
 ### Dataset Verification
 | Check | Requirement |
@@ -403,5 +417,5 @@ python -c "import torch; print(torch.cuda.is_available())"
 
 ---
 
-**Version:** 3.0
+**Version:** 4.0
 **Last Updated:** 2025-11-28 (v0.3 Migration - Decision tree format, 454 → 300 lines)

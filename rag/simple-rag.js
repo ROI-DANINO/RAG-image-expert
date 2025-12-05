@@ -163,7 +163,7 @@ class SimpleRAG {
     let totalFiles = 0;
     let totalChunks = 0;
 
-    // Index knowledge base files
+    // Index knowledge base core files
     if (fs.existsSync(this.KNOWLEDGE_DIR)) {
       const files = fs.readdirSync(this.KNOWLEDGE_DIR)
         .filter(f => f.endsWith('.md'))
@@ -173,6 +173,30 @@ class SimpleRAG {
         console.log(`Processing: knowledge/core/${file}`);
         const content = fs.readFileSync(path.join(this.KNOWLEDGE_DIR, file), 'utf-8');
         const chunks = this.chunkDocument(content, `knowledge/core/${file}`);
+
+        console.log(`  - ${chunks.length} chunks`);
+
+        for (const chunk of chunks) {
+          const embedding = await this.generateEmbedding(chunk.content);
+          this.index.chunks.push(chunk);
+          this.index.embeddings.push(embedding);
+          totalChunks++;
+        }
+        totalFiles++;
+      }
+    }
+
+    // Index knowledge base business files
+    const BUSINESS_DIR = path.join(__dirname, '../knowledge/business');
+    if (fs.existsSync(BUSINESS_DIR)) {
+      const files = fs.readdirSync(BUSINESS_DIR)
+        .filter(f => f.endsWith('.md'))
+        .sort();
+
+      for (const file of files) {
+        console.log(`Processing: knowledge/business/${file}`);
+        const content = fs.readFileSync(path.join(BUSINESS_DIR, file), 'utf-8');
+        const chunks = this.chunkDocument(content, `knowledge/business/${file}`);
 
         console.log(`  - ${chunks.length} chunks`);
 

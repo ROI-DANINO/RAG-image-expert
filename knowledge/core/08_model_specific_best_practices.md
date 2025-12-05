@@ -2,7 +2,7 @@
 
 > Optimized prompting strategies for different image generation models
 >
-> **Last updated:** 2025-11-28 (v0.3)
+> **Last updated:** 2025-12-04 (v0.4)
 > **Models:** Nano Banana Pro, Higgsfield Soul ID, Flux.2, Qwen Image Edit 2509
 > **Purpose:** Quick reference for model-specific prompting
 
@@ -15,8 +15,9 @@
 
 | Feature | Nano Banana Pro | Higgsfield Soul ID | Flux.2 | Qwen Image Edit 2509 |
 |---------|----------------|-------------------|--------|---------------------|
-| **Optimal Length** | <25 words | 40-60 words | 30-100 words | 50-200 characters |
+| **Optimal Length** | Flexible (short or long) | 40-60 words | Flexible (30-100+ words) | Flexible (1-3 sentences) |
 | **Best For** | Text rendering, concise queries | Character consistency | Complex scenes, photorealism | Multi-image editing |
+| **Fal.ai Service** | Speed, Flux models | LoRA generation | High-quality Flux renders | N/A |
 | **Prompt Style** | Structured, concise | Natural with trigger word | Detailed natural language | Expressive, specific |
 | **Special Feature** | Search grounding | Face consistency | Dual encoders | Structural guides |
 | **Reference Images** | Supports, infers details | Primary use case | Handles well | Multi-image native |
@@ -24,13 +25,13 @@
 
 ---
 
-## 1. Nano Banana Pro (Gemini 3 Pro Image)
+## 1. Nano Banana Pro (Gemini Pro Image)
 
 ### Key Strength
 **Best-in-class text rendering** - correctly renders legible text in images (short taglines or long paragraphs)
 
 ### Optimal Prompt Length
-**Under 25 words** (30% higher accuracy vs long prompts)
+**Flexible.** While short, concise prompts (<25 words) are effective for speed and simple concepts, the model is built on Gemini Pro and can handle **long, detailed prompts** for professional and high-quality results. Do not feel constrained by a word limit.
 
 ### Prompt Formula
 ```
@@ -41,9 +42,9 @@
 
 | DO ✅ | DON'T ❌ |
 |------|---------|
-| Be specific with details | Use long, rambling prompts (>30 words) |
+| Be specific with details | Use vague descriptions ("nice," "cool") |
 | Include camera angles | Use vague descriptions ("nice," "cool") |
-| Leverage text rendering | Use overly complex multi-clause sentences |
+| Leverage text rendering | Leave text content ambiguous |
 | Specify exact text in quotes: `with text "COFFEE SHOP"` | Use negative prompts (not supported) |
 | Use multilingual text (95%+ accuracy) | Leave text content ambiguous |
 
@@ -123,13 +124,13 @@ grace_char in business suit, standing confidently, modern office, professional l
 
 ---
 
-## 3. Flux.2
+## 3. Flux.2 (and Fal.ai Service)
 
 ### Key Strength
 **Natural language understanding** - dual text encoders (T5 + CLIP) for technical precision and hierarchical composition
 
 ### Optimal Prompt Length
-**30-100 words** (detailed, specific prompts work best)
+**Flexible (30-100+ words):** Flux is highly flexible. While **30-80 words** is often a sweet spot for detailed images, shorter prompts (**10-30 words**) are effective for exploration, and complex scenes can benefit from **80+ words**.
 
 ### Understanding Dual Encoders
 - **CLIP encoder:** Provides broad guidance (overall vibe, style)
@@ -177,7 +178,7 @@ Casual mirror selfie in gym changing room. Young woman in athletic wear holding 
 - ✅ Structural guides (depth maps, edge maps, keypoint poses, sketches)
 
 ### Optimal Prompt Length
-**50-200 characters** (sweet spot: 80-150 characters)
+**Flexible (1-3 sentences):** This model works well with natural language. Aim for clear and descriptive prompts, typically **1 to 3 sentences**. Don't be afraid to be more detailed for complex scenes.
 
 ### Prompt Formula
 ```
@@ -204,7 +205,24 @@ Casual mirror selfie in gym changing room. Young woman in athletic wear holding 
 
 ---
 
-## 5. Reference Image Workflows
+## 5. Fal.ai Service Integration
+
+### Key Strength
+**Speed and cost-effectiveness for Flux models.** The Fal.ai service is optimized for running Flux models quickly and efficiently.
+
+### When to Use
+- When you need a fast result (use `flux-schnell`).
+- When you want the highest quality Flux output (use `flux-pro` or `flux-realism`).
+- When you are generating images with a trained Flux LoRA.
+
+### Prompting for Fal.ai
+Prompting is the same as for standard Flux models. Use natural language and be descriptive. You can specify the exact model to use for speed or quality.
+
+**See `09_fal_ai_integration.md` and `03b_flux_fal_quick_ref.md` for full details.**
+
+---
+
+## 6. Reference Image Workflows
 
 ### The Core Rule
 
@@ -233,14 +251,14 @@ Casual mirror selfie in gym changing room. Young woman in athletic wear holding 
 
 | Model | Approach | Example |
 |-------|----------|---------|
-| **Nano Banana Pro** | Concise (<25 words) | "Business attire, confident pose, office setting, natural lighting, professional headshot." |
+| **Nano Banana Pro** | Flexible (short or long) | "A professional headshot of a businesswoman in a navy blue suit, against a neutral background with soft studio lighting. Corporate photography style." |
 | **Higgsfield Soul ID** | Primary use case | "grace_char wearing casual white t-shirt and jeans, sitting in coffee shop, natural window light, relaxed smile, waist-up shot, lifestyle photography" |
 | **Flux.2** | Detailed natural language | "Wearing an elegant black evening gown, standing in art gallery with paintings on walls, soft gallery lighting from ceiling, looking over shoulder at camera with mysterious expression, medium shot from slight angle, professional fashion photography style" |
 | **Qwen Image Edit** | Multi-image native | "Place character from image 1 into beach scene from image 2. Match lighting and atmosphere. Natural integration with realistic shadows. Photorealistic quality." |
 
 ---
 
-## 6. General Best Practices (Model Unspecified)
+## 7. General Best Practices (Model Unspecified)
 
 ### Universal Prompt Structure
 ```
@@ -266,7 +284,7 @@ Casual mirror selfie in gym changing room. Young woman in athletic wear holding 
 
 ---
 
-## Cross-References
+## 8. Cross-References
 
 | Topic | See Document |
 |-------|--------------|
@@ -277,6 +295,6 @@ Casual mirror selfie in gym changing room. Young woman in athletic wear holding 
 
 ---
 
-**Version:** 3.0
+**Version:** 4.0
 **Last Updated:** 2025-11-28 (v0.3 Migration - Consolidated from 1,044 → 254 lines, table format)
 **Part of:** AI Image Generation Helper Agent System

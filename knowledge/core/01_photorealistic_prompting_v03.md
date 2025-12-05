@@ -1,9 +1,9 @@
 # Photorealistic Prompting Guide
 
-**Version:** v0.3
+**Version:** v0.4
 **Purpose:** Essential techniques for photorealistic AI image generation
 **Models:** SD, SDXL, Flux, Qwen-Image
-**Last Updated:** 2025-11-28
+**Last Updated:** 2025-12-04
 
 ---
 
@@ -11,7 +11,7 @@
 
 ### 1.1 Essential Keywords
 
-**Foundation layer** (use in every photorealistic prompt):
+**Foundation Layer** (strongly recommended for photorealistic results):
 ```
 photorealistic, hyper-realistic, ultra-realistic
 8K UHD, ultra HD, high resolution
@@ -90,15 +90,16 @@ professional photography, cinematic composition
 - ISO 400-800 → Indoor, balanced
 - ISO 1600+ → Low light, grain acceptable
 
-**Shutter speed** (rarely needed in prompts):
-- Only mention for motion blur/freeze effects
+**Shutter speed** (less common in prompts):
+- Primarily used to specify motion effects (e.g., motion blur, frozen action).
+- Can also be used creatively for light trail effects or other experimental styles.
 - Example: "1/1000 shutter speed, frozen motion"
 
 **Prompt efficiency:** Camera + lens + aperture is usually sufficient.
 
 ---
 
-## 2. Skin Texture & Realism (CRITICAL)
+## 2. Skin Texture & Realism
 
 ### 2.1 The Plastic Skin Problem
 
@@ -111,7 +112,7 @@ professional photography, cinematic composition
 
 ### 2.2 Skin Texture Keywords (Priority Order)
 
-**Tier 1: Essential** (use always for realism)
+**Tier 1: Foundational Keywords.** For photorealistic human subjects, it is highly recommended to include these keywords to prevent an artificial, "plastic" look.
 ```
 natural skin texture
 visible pores
@@ -162,6 +163,16 @@ slightly uneven tone, realistic complexion"
 ```
 ❌ "flawless skin, perfect complexion, smooth skin"
 ```
+
+---
+
+### 2.5 When to Break the Rules: Skin Texture
+
+While the keywords above are crucial for human photorealism, you can and should omit them in certain scenarios:
+
+- **Stylized Art:** For anime, cartoon, or illustrative styles, you want smooth, non-realistic skin.
+- **Non-Human Subjects:** Texturing is less important for objects, animals, or landscapes.
+- **Distant Shots:** For full-body shots or scenes where the subject is far away, detailed skin texture is unnecessary and can be omitted.
 
 ---
 
@@ -276,13 +287,13 @@ slightly uneven tone, realistic complexion"
 
 ### 4.2 Prompt Length by Model
 
-**Qwen-Image (50-200 characters ideal):**
+**Qwen-Image:** This model works well with natural language. Aim for clear and descriptive prompts, typically **1 to 3 sentences**. Don't be afraid to be more detailed for complex scenes, but avoid unnecessary filler words.
 ```
 "photorealistic, woman at cafe, natural lighting,
 shot on Canon R5, 85mm f/1.8, natural skin texture, 8K"
 ```
 
-**Flux (30-100 words):**
+**Flux:** This model is highly flexible with prompt length. While **30-80 words** is often a sweet spot for detailed images, shorter prompts (**10-30 words**) are effective for exploration, and complex scenes can benefit from **80+ words**.
 ```
 "A photorealistic portrait of a young woman sitting at an outdoor cafe.
 Natural lighting, golden hour glow. Shot on Canon EOS R5, 85mm lens,
@@ -486,7 +497,7 @@ afternoon, natural skin texture, visible pores, realistic details"
 ### 6.4 Nano Banana Pro
 
 **Strengths:** Ultra-fast generation, concise prompts, character consistency
-**Optimal length:** <25 words (shorter than Qwen)
+**Optimal length:** Flexible. Short prompts (<25 words) are great for speed, but detailed, longer prompts are encouraged for high-quality results.
 
 **Best for:**
 - Quick character iterations
@@ -500,7 +511,7 @@ afternoon, natural skin texture, visible pores, realistic details"
 ```
 
 **Key principles:**
-- Keep it SHORT (15-25 words max)
+- **Be flexible with length.** While short prompts are fast, detailed prompts often yield better results. Don't feel limited by a word count.
 - Focus on pose and outfit variation
 - Lighting keywords work well
 - Natural language, not tags
@@ -525,7 +536,7 @@ afternoon, natural skin texture, visible pores, realistic details"
 ```
 
 **Common mistakes:**
-- ❌ Too long (>30 words) - model ignores extras
+- ❌ Vague or unclear prompts. Be specific about what you want, not what you don't.
 - ❌ Over-describing face - causes inconsistency
 - ❌ Complex technical specs - keep simple
 
@@ -557,7 +568,7 @@ afternoon, natural skin texture, visible pores, realistic details"
 - ✅ Camera angle ("front view", "side view", "three-quarter")
 - ✅ Mood/atmosphere ("candid", "relaxed", "confident")
 
-**What to NEVER include:**
+**What to Generally Avoid (for faithful replication):**
 - ❌ Hair color/style (reference image handles this)
 - ❌ Eye color (reference image handles this)
 - ❌ Skin tone (reference image handles this)
@@ -694,7 +705,8 @@ visible pores, fine lines, realistic complexion, [atmospheric effects],
 **For use with Soul ID** (see 06_higgsfield_integration.md):
 - Reference image handles appearance
 - Prompt focuses on: pose, setting, lighting, camera
-- NEVER describe: hair, face, skin tone (reference handles this)
+- **For faithful replication:** Avoid describing features already present in the reference image (like hair, face, or skin tone), as the model will handle this.
+- **To modify a feature:** You can intentionally describe a change (e.g., "*with blonde hair*") to override the reference.
 
 **For Instagram-style** (see 07_instagram_authentic_v03.md):
 - Use iPhone camera references
@@ -705,6 +717,6 @@ visible pores, fine lines, realistic complexion, [atmospheric effects],
 
 **End of Guide**
 **Lines:** ~710
-**Version:** v0.3
+**Version:** v0.4
 **Models Covered:** Qwen, Flux, SD/SDXL, Nano Banana Pro, Higgsfield Soul ID
 **Cross-references:** 02, 06, 07
