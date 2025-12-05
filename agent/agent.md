@@ -56,7 +56,7 @@ Automatically detect or infer which image generation model the user is working w
 #### When Nano Banana Pro Detected:
 ```
 **Optimizing for Nano Banana Pro:**
-- Keep prompt under 25 words
+- Flexible prompt length (short prompts work, but detailed prompts encouraged for professional results)
 - Use structured format: [Subject] doing [Action] in [Location]. [Composition]. [Lighting]. [Style].
 - For text rendering, specify exact text in quotes
 - Example: "Woman holding sign with text \"HELLO WORLD\". Studio portrait. Clean background. Professional lighting."
@@ -75,7 +75,7 @@ Automatically detect or infer which image generation model the user is working w
 #### When Flux.2 Detected:
 ```
 **Optimizing for Flux.2:**
-- Use detailed natural language (30-100 words)
+- Flexible prompt length (30-100+ words for detailed scenes, 10-30 words for exploration)
 - Include technical specs: camera model, lens, aperture
 - Organize hierarchically: foreground, middle ground, background
 - Use positive phrasing (not negations)
@@ -85,7 +85,7 @@ Automatically detect or infer which image generation model the user is working w
 #### When Qwen Image Edit Detected:
 ```
 **Optimizing for Qwen Image Edit 2509:**
-- Use 50-200 characters
+- Flexible prompt length (typically 1-3 sentences, be descriptive for complex edits)
 - Structure: [What to keep/transfer] from [source], [what to change/add], [context], [quality]
 - Be expressive and specific
 - Example: "Transfer the red dress from image 1 to the woman in image 2. Modern office setting. Professional lighting. High quality photorealistic rendering."
@@ -105,10 +105,10 @@ Automatically detect or infer which image generation model the user is working w
 
 | User Signal | Infer Model | Prompt Length | Key Characteristic |
 |-------------|-------------|---------------|-------------------|
-| "Text rendering" | Nano Banana Pro | <25 words | Text-focused |
+| "Text rendering" | Nano Banana Pro | Flexible (short or detailed) | Text-focused |
 | "Trigger word" / "LoRA" | Higgsfield Soul ID | 40-60 words | Character consistency |
-| "Multi-image" / "Transfer" | Qwen Image Edit | 50-200 chars | Image editing |
-| Detailed scene (>50 words) | Flux.2 | 30-100 words | Complex scenes |
+| "Multi-image" / "Transfer" | Qwen Image Edit | Flexible (1-3 sentences) | Image editing |
+| Detailed scene (>50 words) | Flux.2 | Flexible (30-100+ words) | Complex scenes |
 | Unspecified | General | 40-60 words | Universal structure |
 
 ### Source
@@ -339,10 +339,10 @@ When user has reference image + specific model:
 
 | Model | Template |
 |-------|----------|
-| **Nano Banana Pro** | `[Outfit], [pose], [setting], [lighting], [camera angle]` (concise, <25 words) |
+| **Nano Banana Pro** | `[Outfit], [pose], [setting], [lighting], [camera angle]` (flexible - short or detailed) |
 | **Higgsfield Soul ID** | `[trigger], [outfit], [pose], [setting], [lighting], [mood], [camera angle], [style]` (40-60 words) |
-| **Flux.2** | Detailed natural language focusing on context, not character features (30-100 words) |
-| **Qwen Image Edit** | Multi-image format: "Place character from image 1 into [scene]. Match lighting. Natural integration." |
+| **Flux.2** | Detailed natural language focusing on context, not character features (flexible, 30-100+ words) |
+| **Qwen Image Edit** | Multi-image format: "Place character from image 1 into [scene]. Match lighting. Natural integration." (flexible, 1-3 sentences) |
 
 ### Agent Response Template
 
@@ -700,9 +700,9 @@ When generating actual image prompts, use **full model-appropriate length**:
 
 | Model | Length | Example |
 |-------|--------|---------|
-| Nano Banana Pro | <25 words | "Mirror selfie, bikini, iPhone visible, dirty mirror, flash, messy bedroom, casual." |
+| Nano Banana Pro | Flexible (short or detailed) | Short: "Mirror selfie, bikini, iPhone visible, dirty mirror, flash, messy bedroom, casual." OR Detailed: "Professional mirror selfie showcasing beachwear outfit. Woman in turquoise bikini holding latest iPhone model. Bathroom mirror with water droplets and fingerprints. Natural morning light from window. Casual, authentic pose." |
 | Higgsfield Soul ID | 40-60 words | "grace_char mirror selfie wearing bikini, holding iPhone, fingerprints on mirror, harsh flash creating starburst, cluttered bedroom background, casual hip-pop pose, authentic Instagram vibe" |
-| Flux.2 | 30-100 words | "A casual mirror selfie. Woman in a bikini holding her iPhone. The mirror has fingerprints and the flash creates a bright starburst. Her bedroom is messy with clothes on the floor. Very casual pose, not trying too hard. Looks like a real Instagram post." |
+| Flux.2 | Flexible (30-100+ words) | "A casual mirror selfie. Woman in a bikini holding her iPhone. The mirror has fingerprints and the flash creates a bright starburst. Her bedroom is messy with clothes on the floor. Very casual pose, not trying too hard. Looks like a real Instagram post." |
 
 ---
 

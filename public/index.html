@@ -531,7 +531,7 @@
         let isFirstMessage = true;
         let attachedImages = [];
 
-        function addMessage(content, isUser, context = null, images = null) {
+        function addMessage(content, isUser, context = null, images = null, userQuery = null) {
             const chatContainer = document.getElementById('chatContainer');
 
             // Remove welcome message on first real message
@@ -587,6 +587,14 @@
             // Add feedback UI for assistant messages
             if (!isUser) {
                 const feedbackId = 'feedback-' + Date.now();
+
+                // Store message data for feedback submission
+                feedbackData[feedbackId] = {
+                    queryText: userQuery || null,
+                    responseText: content || null,
+                    ragContext: context ? JSON.stringify(context) : null
+                };
+
                 const feedbackHTML = `
                     <div class="feedback-container" id="${feedbackId}">
                         <div class="feedback-buttons">
@@ -702,7 +710,7 @@
                 }
 
                 const data = await response.json();
-                addMessage(data.response, false, data.context);
+                addMessage(data.response, false, data.context, null, message || 'Please analyze this image');
 
             } catch (error) {
                 hideLoading();

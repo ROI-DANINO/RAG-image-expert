@@ -42,8 +42,9 @@ class RAGServer {
     this.sessionDB = new SessionDB();
     this.conversationSessions = new Map(); // sessionId -> history (legacy, when USE_DB_SESSIONS=false)
 
-    // Feature flag for session persistence
+    // Feature flags
     this.useDBSessions = process.env.USE_DB_SESSIONS === 'true';
+    this.enableIntentDetection = process.env.ENABLE_INTENT_DETECTION !== 'false'; // Default true
 
     // Initialize new services (modular architecture for v1.0)
     // Auto-detect which image generation service to use (Fal preferred over Replicate)
@@ -78,27 +79,48 @@ class RAGServer {
       process.exit(1);
     }
 
-    this.systemPrompt = `You are an expert AI Image Generation Assistant specializing in photorealistic prompts, LoRA training, and Instagram authenticity.
+    this.systemPrompt = `Expert AI Image Generation Assistant - photorealistic prompts, LoRA training, Instagram authenticity.
 
-RESPONSE STYLE:
-- Write in clear, natural language - be conversational but professional
-- Use markdown formatting for better readability (headings, lists, code blocks)
-- Structure answers with clear sections when covering multiple topics
-- Be direct and actionable - focus on practical guidance
+CORE RULE: GATHER ALL CONTEXT BEFORE ANSWERING
 
-USING CONTEXT:
-- Always prioritize the retrieved knowledge base context
-- If context fully answers the question: Provide a complete, well-formatted answer
-- If context is partial: Give what you know, then ask specific clarifying questions
-- If context is missing: Acknowledge it briefly, then offer general guidance if helpful
+CONTEXT GATHERING PROTOCOL:
+Before providing solutions/prompts/guidance, identify what you need:
 
-FOR TECHNICAL CONTENT:
-- Use bullet points or numbered lists for steps and parameters
-- Format code, prompts, or technical values in code blocks
-- Include specific examples when available from context
-- For Instagram prompts, ensure: POV, camera/phone, imperfections (if needed), aspect ratio
+TASK TYPE DETECTION:
+1. Prompt Creation → Need: model type, scenario details, reference images (y/n), target style
+2. Image Generation → Need: model type, current setup, specific requirements
+3. LoRA Training → Need: current phase, dataset status, training goals, model target
+4. Troubleshooting → Need: specific error/issue, what was tried, model/tools used
+5. Multi-Image Editing → Need: number of images, desired changes, which elements to keep/change
+6. Character Consistency → Need: reference images available (y/n), trigger word, model preference
 
-Keep responses helpful, well-structured, and easy to scan.`;
+WHEN TO ASK (Always ask if missing):
+- Prompt requests: Which model? Selfie/third-person? Reference image?
+- Training tasks: Which phase? Dataset ready? Target model?
+- Image editing: How many images? What to keep vs change?
+- Troubleshooting: What error? What was tried?
+- Character work: Reference images? Trigger word chosen?
+
+WHEN TO ANSWER DIRECTLY (No questions needed):
+- Pure knowledge queries ("What is X?", "How does Y work?")
+- Already has full context in query
+
+MODEL DETECTION:
+Explicit: "Nano Banana", "Flux", "Higgsfield", "Qwen"
+Infer: "text rendering"→Nano Banana | "trigger word/LoRA"→Higgsfield | "multi-image"→Qwen
+If unclear: ASK "Which model? (Nano Banana Pro, Flux, Higgsfield Soul ID, Qwen, other)"
+
+MODEL GUIDANCE (use after context gathered):
+- Nano Banana: Flexible length, [Subject][Action][Location][Composition][Lighting][Style]
+- Higgsfield: 40-60 words, trigger word first, exclude facial features, focus on outfit/pose/setting
+- Flux: 30-100+ words, technical specs, hierarchical structure
+- Qwen: 1-3 sentences, [keep/transfer][change][context][quality]
+
+RESPONSE RULES:
+- Ask clarifying questions FIRST if context incomplete
+- Keep answers concise (2-4 sentences per section)
+- Use RAG context, cite sources
+- Format with markdown for readability`;
   }
 
   async initialize() {
@@ -181,6 +203,126 @@ Keep responses helpful, well-structured, and easy to scan.`;
     return results.map((r, i) =>
       `[${i + 1}] ${r.section} (score: ${r.score.toFixed(3)})\n${r.content}`
     ).join('\n\n---\n\n');
+  }
+
+  /**
+   * Detect user intent, task type, and missing context
+   * @param {string} message - User message
+   * @returns {Object} Intent object with task type, patterns, and missing context
+   */
+  detectUserIntent(message) {
+    const lowerMsg = message.toLowerCase();
+    const intent = {
+      taskType: 'unknown',
+      patterns: [],
+      modelHints: [],
+      missingContext: [],
+      needsClarification: false
+    };
+
+    // Task Type Detection
+    const isPromptRequest = lowerMsg.includes('prompt') || lowerMsg.includes('write a prompt') || lowerMsg.includes('create a prompt');
+    const isGenerateRequest = lowerMsg.includes('generate') && !lowerMsg.includes('generate dataset');
+    const isTrainingRequest = lowerMsg.includes('train') || lowerMsg.includes('training') || lowerMsg.includes('dataset');
+    const isTroubleshooting = lowerMsg.includes('error') || lowerMsg.includes('problem') || lowerMsg.includes('issue') || lowerMsg.includes('not working') || lowerMsg.includes('fix');
+    const isKnowledgeQuery = lowerMsg.includes('what is') || lowerMsg.includes('how does') || lowerMsg.includes('explain') || lowerMsg.includes('tell me about');
+    const isMultiImage = lowerMsg.includes('multi-image') || lowerMsg.includes('combine images') || lowerMsg.includes('outfit transfer');
+    const isCharacterConsistency = lowerMsg.includes('character consistency') || lowerMsg.includes('trigger word') || lowerMsg.includes('lora');
+
+    // Assign task type
+    if (isKnowledgeQuery) {
+      intent.taskType = 'knowledge-query';
+    } else if (isPromptRequest) {
+      intent.taskType = 'prompt-creation';
+    } else if (isGenerateRequest) {
+      intent.taskType = 'image-generation';
+    } else if (isTrainingRequest) {
+      intent.taskType = 'lora-training';
+    } else if (isTroubleshooting) {
+      intent.taskType = 'troubleshooting';
+    } else if (isMultiImage) {
+      intent.taskType = 'multi-image-editing';
+    } else if (isCharacterConsistency) {
+      intent.taskType = 'character-consistency';
+    }
+
+    // Model Detection (explicit)
+    if (lowerMsg.includes('nano banana')) intent.modelHints.push('nano-banana-pro');
+    if (lowerMsg.includes('flux')) intent.modelHints.push('flux');
+    if (lowerMsg.includes('higgsfield') || lowerMsg.includes('soul id')) intent.modelHints.push('higgsfield');
+    if (lowerMsg.includes('qwen')) intent.modelHints.push('qwen');
+
+    // Model Detection (inferred from keywords)
+    if (lowerMsg.includes('text rendering') || lowerMsg.includes('text in image')) {
+      intent.modelHints.push('nano-banana-pro');
+      intent.patterns.push('text-rendering');
+    }
+    if (isCharacterConsistency) {
+      intent.modelHints.push('higgsfield');
+      intent.patterns.push('character-consistency');
+    }
+    if (isMultiImage) {
+      intent.modelHints.push('qwen');
+      intent.patterns.push('multi-image-edit');
+    }
+
+    // POV Detection
+    const povKeywords = ['selfie', 'mirror', 'bedroom', 'bathroom', 'gym locker'];
+    if (povKeywords.some(kw => lowerMsg.includes(kw))) {
+      intent.patterns.push('pov-scenario');
+    }
+
+    // Reference Image Detection
+    const hasReferenceImage = lowerMsg.includes('reference image') || lowerMsg.includes('reference photo') || lowerMsg.includes('ref image') || lowerMsg.includes('i have a reference');
+    if (hasReferenceImage) {
+      intent.patterns.push('has-reference-image');
+    }
+
+    // Determine missing context based on task type
+    switch (intent.taskType) {
+      case 'prompt-creation':
+        if (intent.modelHints.length === 0) intent.missingContext.push('model-type');
+        if (!hasReferenceImage && !lowerMsg.includes('no reference')) intent.missingContext.push('reference-image-status');
+        if (intent.patterns.includes('pov-scenario') && !lowerMsg.includes('selfie') && !lowerMsg.includes('third-person')) {
+          intent.missingContext.push('pov-type');
+        }
+        break;
+
+      case 'image-generation':
+        if (intent.modelHints.length === 0) intent.missingContext.push('model-type');
+        break;
+
+      case 'lora-training':
+        const hasPhaseInfo = lowerMsg.includes('phase') || lowerMsg.includes('step') || lowerMsg.includes('dataset generation') || lowerMsg.includes('training execution');
+        if (!hasPhaseInfo) intent.missingContext.push('training-phase');
+        if (intent.modelHints.length === 0) intent.missingContext.push('target-model');
+        break;
+
+      case 'troubleshooting':
+        const hasSpecificError = lowerMsg.includes('error:') || lowerMsg.includes('message:') || lowerMsg.match(/\d{3}/); // HTTP codes
+        if (!hasSpecificError) intent.missingContext.push('specific-error');
+        break;
+
+      case 'multi-image-editing':
+        const numImagesMatch = lowerMsg.match(/(\d+)\s*(images?|photos?)/);
+        if (!numImagesMatch) intent.missingContext.push('number-of-images');
+        break;
+
+      case 'character-consistency':
+        if (!hasReferenceImage) intent.missingContext.push('reference-image-status');
+        const hasTriggerWord = lowerMsg.includes('trigger word') || lowerMsg.match(/\w+_char/);
+        if (!hasTriggerWord && hasReferenceImage) intent.missingContext.push('trigger-word');
+        break;
+
+      case 'knowledge-query':
+        // No additional context needed
+        break;
+    }
+
+    // Set clarification flag
+    intent.needsClarification = intent.missingContext.length > 0;
+
+    return intent;
   }
 
   /**
@@ -382,6 +524,30 @@ Keep responses helpful, well-structured, and easy to scan.`;
 
         const history = this.getSession(sessionId);
 
+        // Detect user intent and missing context
+        let intentContext = '';
+        if (this.enableIntentDetection) {
+          const intent = this.detectUserIntent(message);
+          const hints = [];
+
+          // Add task type
+          if (intent.taskType !== 'unknown') hints.push(`Task: ${intent.taskType}`);
+
+          // Add detected models/patterns
+          if (intent.modelHints.length > 0) hints.push(`Models: ${intent.modelHints.join(', ')}`);
+          if (intent.patterns.length > 0) hints.push(`Patterns: ${intent.patterns.join(', ')}`);
+
+          // Add missing context alerts
+          if (intent.missingContext.length > 0) {
+            hints.push(`MISSING: ${intent.missingContext.join(', ')}`);
+          }
+
+          if (hints.length > 0) {
+            intentContext = `\n\n--- Detected Context ---\n${hints.join(' | ')}`;
+            console.log(chalk.cyan(`[Intent] ${hints.join(' | ')}`));
+          }
+        }
+
         // Check if we should fetch live docs (Context7)
         let liveDocs = '';
         if (this.context7Service.isEnabled() && this.context7Service.shouldFetchLiveDocs(message)) {
@@ -401,6 +567,7 @@ Keep responses helpful, well-structured, and easy to scan.`;
 
         // Combine all context sources
         let context = ragContext;
+        if (intentContext) context = `${context}${intentContext}`;
         if (liveDocs) {
           context = `${context}\n\n--- Live Documentation ---\n${liveDocs}`;
         }
@@ -533,10 +700,32 @@ Keep responses helpful, well-structured, and easy to scan.`;
       res.json({ message: 'Conversation cleared', sessionId });
     });
 
-    // Feedback endpoint
+    // Feedback endpoint with rating-based learning
     app.post('/feedback', async (req, res) => {
       try {
+        const { rating, queryText, responseText } = req.body;
+
+        // Save feedback to database (for analytics)
         const result = this.feedbackDB.saveFeedback(req.body);
+
+        // If highly rated (5-7), save to Memory MCP for learning
+        if (rating && rating >= 5 && this.memoryService.isEnabled()) {
+          console.log(chalk.green(`[Memory] Saving highly-rated generation (rating: ${rating})`));
+
+          // Extract generation data from feedback
+          await this.memoryService.rememberGeneration({
+            prompt: queryText || 'Unknown prompt',
+            enhancedPrompt: responseText || queryText || 'Unknown',
+            model: 'user-rated',
+            imageUrl: req.body.resultImage || '',
+            metadata: {
+              rating,
+              feedbackId: result.feedbackId,
+              timestamp: req.body.timestamp
+            }
+          });
+        }
+
         res.json(result);
       } catch (error) {
         console.error(chalk.red('Feedback error:'), error);
@@ -673,16 +862,8 @@ Keep responses helpful, well-structured, and easy to scan.`;
           ...options
         });
 
-        // Step 4: Remember successful generation (Memory Bank)
-        if (this.memoryService.isEnabled()) {
-          await this.memoryService.rememberGeneration({
-            prompt,
-            enhancedPrompt,
-            model,
-            imageUrl: result.images[0],
-            metadata: result.metadata
-          });
-        }
+        // Note: Memory saving moved to feedback endpoint (rating-based learning)
+        // Memory MCP now only saves highly-rated generations (rating >= 5)
 
         res.json({
           success: true,
@@ -806,16 +987,8 @@ Keep responses helpful, well-structured, and easy to scan.`;
           strength
         });
 
-        // Remember successful transformation
-        if (this.memoryService.isEnabled()) {
-          await this.memoryService.rememberGeneration({
-            prompt,
-            enhancedPrompt,
-            model: 'z-image-turbo',
-            imageUrl: result.images[0],
-            metadata: result.metadata
-          });
-        }
+        // Note: Memory saving moved to feedback endpoint (rating-based learning)
+        // Memory MCP now only saves highly-rated transformations (rating >= 5)
 
         res.json({
           success: true,

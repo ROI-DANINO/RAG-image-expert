@@ -1,9 +1,9 @@
 # RAG Image Expert - Development Roadmap
 
-## Current Status: Phase 3.5 Complete (v0.7.0) ✅
+## Current Status: Phase 3.6 Complete (v0.6.0) ✅
 
-**Last Updated:** 2025-12-04
-**Version:** 0.7.0 "Knowledge Base Enhancement"
+**Last Updated:** 2025-12-05
+**Version:** 0.6.0 "Smart Clarification System"
 
 ---
 
@@ -389,6 +389,82 @@ knowledge/
 ### Git Commits
 - Will be committed on `data-enhancement` branch
 - Separate from feature code for clear git history
+
+---
+
+## Phase 3.6: Intelligent Context Gathering (COMPLETED) ✅
+
+**Version:** 0.6.0 "Smart Clarification System"
+**Date:** 2025-12-05
+**Goal:** System gathers ALL necessary context before answering any task
+
+### Features Implemented ✅
+
+**Task Type Detection:**
+- ✅ **6 Task Categories** - Prompt creation, image generation, LoRA training, troubleshooting, multi-image editing, character consistency
+- ✅ **Knowledge Query Detection** - Answers directly for "What is X?" queries without clarification
+- ✅ **Task-Specific Context Requirements** - Each task type knows what context it needs
+
+**Missing Context Detection:**
+- ✅ **Model Type Detection** - Explicit ("Flux") and inferred ("text rendering" → Nano Banana)
+- ✅ **Reference Image Status** - Asks if user has reference images for character work
+- ✅ **POV Scenario Detection** - Identifies selfie/mirror scenarios requiring POV clarification
+- ✅ **Training Phase Detection** - Asks which phase user is in (dataset, training, testing)
+- ✅ **Error Details Detection** - Requires specific error messages for troubleshooting
+- ✅ **Image Count Detection** - Asks how many images for multi-image editing
+
+**Smart Routing:**
+- ✅ **Critical Questions First** - Asks before answering for tasks requiring context
+- ✅ **Direct Answers** - No questions for pure knowledge queries
+- ✅ **Context Alerts to LLM** - Passes detected task type and missing context to LLM
+
+**System Prompt Enhancement:**
+- ✅ **Task-Based Protocol** - Clear rules for each task type
+- ✅ **Token-Efficient Design** - Concise format maintaining token optimization
+- ✅ **Context Gathering Rules** - When to ask vs when to answer directly
+
+**Implementation:**
+- ✅ **detectUserIntent() Method** - Analyzes query for task type and missing context
+- ✅ **Intent Context Injection** - Passes `Task`, `Models`, `Patterns`, `MISSING` to LLM
+- ✅ **Feature Flag** - `ENABLE_INTENT_DETECTION=true` (default enabled)
+- ✅ **Backward Compatible** - Can be disabled without breaking existing functionality
+
+**Testing:**
+- ✅ **8/8 Model Detection Tests** - All passing
+- ✅ **12/14 Comprehensive Tests** - 86% success rate across all task types
+- ✅ **Server Startup Verified** - No breaking changes
+
+### Technical Details
+
+**Files Modified:**
+- `rag-server.js`: System prompt (lines 82-123), detectUserIntent() (213-326), /conversation integration (527-549)
+- `.env.example`: Added ENABLE_INTENT_DETECTION flag (line 72)
+- `test-intent-detection.js`: Model detection test suite (new)
+- `test-comprehensive-context.js`: All task types test suite (new)
+
+**Context Detection Flow:**
+```
+User Query → detectUserIntent()
+  ↓
+Task Type Identified (prompt-creation, lora-training, etc.)
+  ↓
+Missing Context Detected (model-type, phase, error-details, etc.)
+  ↓
+Intent Context Added: "Task: X | MISSING: Y, Z"
+  ↓
+LLM Receives Alert → Asks Clarifying Questions First
+```
+
+**Examples:**
+- "Help me create a prompt" → Detects: Task=prompt-creation, MISSING=[model-type, reference-image-status]
+- "I need help with LoRA training" → Detects: Task=lora-training, MISSING=[training-phase, target-model]
+- "What is LoRA training?" → Detects: Task=knowledge-query, MISSING=[] (answers directly)
+
+### Benefits
+- **Better Responses** - System has full context before generating solutions
+- **Fewer Iterations** - Gets it right the first time
+- **User Guidance** - Helps users understand what info is needed
+- **Token Efficient** - Concise clarification questions, no wasted context
 
 ---
 

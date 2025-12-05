@@ -41,6 +41,10 @@ Retrieve-Augmented Generation (RAG) system specialized in photorealistic prompts
 - **Fast Semantic Search**: ~7ms query response using local embeddings
 - **LLM Integration**: Supports any OpenAI-compatible API
 - **Multi-Query RAG**: Automatic query expansion for better context
+- **Intelligent Context Gathering** ⭐ NEW: Asks clarifying questions before answering
+  - Detects task type (prompt creation, training, troubleshooting, etc.)
+  - Identifies missing context (model type, phase, reference images, etc.)
+  - Smart routing: asks questions for critical tasks, answers directly for knowledge queries
 - **Local & API**: Works with both local LLMs and cloud APIs
 - **REST API Server**: Deploy as a service with web UI
 - **CLI Chat**: Interactive terminal interface
@@ -266,16 +270,20 @@ RAG-image-expert/
 | `AI_BASE_URL` | No | `https://api.x.ai/v1` | LLM API endpoint |
 | `AI_MODEL` | No | `grok-beta` | Model name |
 | `PORT` | No | `3000` | Server port |
+| `USE_DB_SESSIONS` | No | `false` | Enable persistent session storage (52% token savings) |
+| `ENABLE_INTENT_DETECTION` | No | `true` | Enable intelligent context gathering (v0.6+) |
 
 ---
 
 ## How It Works
 
-1. **Semantic Search**: User query → Xenova embeddings → Cosine similarity → Top K chunks
-2. **Query Expansion**: Automatically adds related queries (e.g., "Instagram" → also searches "POV framework")
-3. **Context Building**: Format retrieved chunks with scores and sections
-4. **LLM Generation**: Send context + query to LLM → Generate response
-5. **Multi-turn Support**: Conversation history maintained per session
+1. **Intent Detection** (v0.6+): Analyze query to identify task type and missing context
+2. **Semantic Search**: User query → Xenova embeddings → Cosine similarity → Top K chunks
+3. **Query Expansion**: Automatically adds related queries (e.g., "Instagram" → also searches "POV framework")
+4. **Context Gathering**: If critical context is missing, ask clarifying questions first
+5. **Context Building**: Format retrieved chunks with scores, sections, and detected intent
+6. **LLM Generation**: Send enriched context + query to LLM → Generate response
+7. **Multi-turn Support**: Conversation history maintained per session
 
 ---
 
